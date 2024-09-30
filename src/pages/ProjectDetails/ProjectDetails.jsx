@@ -90,6 +90,12 @@ const ProjectDetails = () => {
 
                 </div>
 
+                <div className='flex'>
+                  <p className='w-36'>Tệp đính kèm :</p>
+                  <Badge>Chưa có tệp nào</Badge>
+
+                </div>
+
 
               </div>
 
