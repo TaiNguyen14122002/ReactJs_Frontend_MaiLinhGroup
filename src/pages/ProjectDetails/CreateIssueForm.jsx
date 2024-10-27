@@ -18,7 +18,9 @@ const CreateIssueForm = ({status}) => {
     // resolver: zod
     defaultValues: {
         issueName: "",
-        description: ""
+        description: "",
+        priority: "",
+        dueDate: ""
     },
 })
 
@@ -29,6 +31,8 @@ const onSubmit = (data) => {
         title: data.issueName, 
         description: data.description, 
         projectId: id,
+        priority: data.priority,
+        dueDate: data.dueDate,
         status,
     }))
     console.log("create issue data:", data);
@@ -59,6 +63,46 @@ const onSubmit = (data) => {
                                     type="text"
                                     className="border w-full bordergray-700 py-5 px-5"
                                     placeholder="Mô tả ..." />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>}
+                    />
+                    <FormField control={form.control}
+                        name="priority"
+                        render={({ field }) => <FormItem>
+                            <FormControl>
+                                <Select
+                                    defaultValue='Medium'
+                                    value={field.value}
+                                    onValueChange={(value) => {
+                                        field.onChange(value)
+                                    }}
+
+                                // className="border w-full bordergray-700 py-5 px-5"
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Độ ưu tiên" />
+
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Low">Thấp</SelectItem>
+                                        <SelectItem value="Medium">Bình thường</SelectItem>
+                                        <SelectItem value="High">Cao</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>}
+                    />
+                    <FormField control={form.control}
+                        name="dueDate"
+                        render={({ field }) => <FormItem>
+                            <FormControl>
+                                <Input {...field}
+                                    type="date"
+                                    className="border w-full bordergray-700 py-5 px-5"
+                                    placeholder="Ngày hết hạn ..." />
                             </FormControl>
                             <FormMessage />
                         </FormItem>}

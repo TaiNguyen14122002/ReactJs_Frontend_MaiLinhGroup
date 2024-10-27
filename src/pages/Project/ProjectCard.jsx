@@ -2,7 +2,7 @@ import { deleteProject, fetchProjectById } from '@/Redux/Project/Action'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuShortcut, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { DotFilledIcon, DotsVerticalIcon } from '@radix-ui/react-icons'
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
@@ -15,7 +15,7 @@ const ProjectCard = ({ item }) => {
     const handleDelete = () => {
         dispatch(deleteProject({ projectId: item.id }));
     };
-    
+
     return (
         <Card className="p-5 w-full lg:max-w-3x1">
             <div className='space-y-5'>
@@ -41,13 +41,16 @@ const ProjectCard = ({ item }) => {
                                         <DotsVerticalIcon />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent>
+                                <DropdownMenuContent className="w-56">
                                     <DropdownMenuItem>
                                         Cập nhập
+                                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={handleDelete}>
                                         Xoá dự án
+                                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                                     </DropdownMenuItem>
+
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>

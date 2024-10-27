@@ -14,38 +14,45 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getUser } from './Redux/Auth/Action'
 import { fetchProjects } from './Redux/Project/Action'
 import AcceptInvitation from './pages/Project/AcceptInvitation'
+import CountProjectByUser from './pages/Chart/Issue/CountProjectByUser'
+import GetIssuesCountByStatus from './pages/Chart/Issue/GetIssuesCountByStatus'
 
 function App() {
 
   const dispatch = useDispatch();
-  const {auth} = useSelector(store => store)
+  const { auth } = useSelector(store => store)
 
   useEffect(() => {
     dispatch(getUser())
     dispatch(fetchProjects({}))
-  },[auth.jwt])
+  }, [auth.jwt])
 
   console.log(auth)
 
- 
+
 
   return (
     <>
-    
-    {
-      auth.user ? <div>
-    <Navbar/>
-    
-    <Routes>
-      <Route path='/' element={<Home/>}/>
-      <Route path='/project/:id' element={<ProjectDetails/>}/>
-      <Route path='/project/:projectId/issue/:issueId' element={<IssueDetails/>}/>
-      <Route path='/upgrade_plan' element={<Subscription/>}/>
-      <Route path='/accept_invitation' element={<AcceptInvitation/>}/>
-    </Routes>
-    </div> : <Auth/>
-    }
-    
+
+      {
+        auth.user ? <div>
+          <div>
+            <Navbar />
+
+            <Routes>
+              <Route path='/' element={<Home />} />
+              <Route path='/project/:id' element={<ProjectDetails />} />
+              <Route path='/project/:projectId/issue/:issueId' element={<IssueDetails />} />
+              <Route path='/upgrade_plan' element={<Subscription />} />
+              <Route path='/accept_invitation' element={<AcceptInvitation />} />
+              <Route path='/countproject' element={<CountProjectByUser />} />
+              <Route path='/project/status' element={<GetIssuesCountByStatus />} />
+            </Routes>
+          </div>
+
+        </div> : <Auth />
+      }
+
     </>
   )
 }

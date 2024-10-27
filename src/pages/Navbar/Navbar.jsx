@@ -1,5 +1,15 @@
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTrigger } from '@/components/ui/dialog'
+import { Button } from "@/components/ui/button"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import React, { useEffect, useRef, useState } from 'react'
 import CreateProjectForm from '../Project/CreateProjectForm'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -11,7 +21,9 @@ import { logout } from '@/Redux/Auth/Action'
 
 
 const Navbar = () => {
-    const {auth} = useSelector(store => store)
+
+    const [visible, setVisible] = useState(false)
+    const { auth } = useSelector(store => store)
     const navigate = useNavigate()
 
     const dispatch = useDispatch();
@@ -37,8 +49,12 @@ const Navbar = () => {
                             Kế hoạch mới
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>Kế hoạch mới</DialogHeader>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogTitle>Edit profile</DialogTitle>
+                        <DialogDescription>
+                            Make changes to your profile here. Click save when you're done.
+                        </DialogDescription>
+
                         <CreateProjectForm />
                     </DialogContent>
 
@@ -47,15 +63,15 @@ const Navbar = () => {
                     Nhiệm vụ cho tôi
                 </Button>
 
-                <Button onClick={() => navigate("/upgrade_plan")} variant="ghost">
+                <Button onClick={() => navigate("/countproject")} variant="ghost">
                     Thống kê
                 </Button>
 
-                <Button onClick={() => navigate("/upgrade_plan")} variant="ghost">
+                <Button onClick={() => navigate("/project/status" )} variant="ghost">
                     Giới thiệu
                 </Button>
 
-                
+
 
             </div>
 
@@ -63,10 +79,13 @@ const Navbar = () => {
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Button variant="outline" size="icon" className="rounded-full border-2 border-gray-500">
-                            <PersonIcon/>
+                            <PersonIcon />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleLogout}>
+                            Đự án đã xoá
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleLogout}>
                             Thông tin cá nhân
                         </DropdownMenuItem>

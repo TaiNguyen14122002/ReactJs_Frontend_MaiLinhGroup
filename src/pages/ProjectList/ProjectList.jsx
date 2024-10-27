@@ -84,17 +84,17 @@ const ProjectList = () => {
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                <RadioGroupItem value='fullstack' id="r2" />
-                                                <Label htmlFor="r2">FullStack</Label>
+                                                <RadioGroupItem value='Full Stack' id="r2" />
+                                                <Label htmlFor="r2">Full Stack</Label>
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                <RadioGroupItem value='frontend' id="r3" />
+                                                <RadioGroupItem value='Frontend' id="r3" />
                                                 <Label htmlFor="r3">Frontend</Label>
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                <RadioGroupItem value='backend' id="r4" />
+                                                <RadioGroupItem value='Backend' id="r4" />
                                                 <Label htmlFor="r4">Backend</Label>
                                             </div>
                                         </RadioGroup>
