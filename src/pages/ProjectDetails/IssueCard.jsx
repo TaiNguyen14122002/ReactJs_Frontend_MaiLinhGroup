@@ -21,7 +21,7 @@ const IssueCard = ({item, projectId}) => {
             <CardHeader className="py-0 pb-1">
                 <div className="flex justify-between items-center">
                     <CardTitle className="cursor-pointer" onClick = {()=> navigate(`/project/${projectId}/issue/${item.id}`)}>
-                        {item.title}
+                    {item.assignee?.fullname || "Chưa phân công"}
                     </CardTitle>
 
                     <DropdownMenu>

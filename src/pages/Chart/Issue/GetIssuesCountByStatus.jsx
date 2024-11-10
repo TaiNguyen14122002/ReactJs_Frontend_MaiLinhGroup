@@ -3,18 +3,35 @@ import axios from 'axios';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Paper } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Đăng ký các thành phần của Chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
 const GetIssuesCountByStatus = () => {
+    const [priority, setPriority] = useState(null);
     const [stats, setStats] = useState(null);
+    const [countByStatusAndAssignee, setcountByStatusAndAssignee] = useState(null);
+    const [listIssue, setListIssue] = useState([]);
+    const navigate = useNavigate();
+
+    const [selectedIssue, setSelectedIssue] = useState(null);
+
+    const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
+
     const [issues, setIssues] = useState([]);
     const token = localStorage.getItem('jwt');  // Lấy JWT từ localStorage
     const { projectId } = useParams();  // Lấy projectId từ URL
     console.log("Đang lấy thống kê cho projectId:", projectId);
 
+    const { id } = useParams();
+
+
+    //Biểu đồ nhiệm vụ theo độ ưu tiên
     useEffect(() => {
         // Kiểm tra nếu không có token
         if (!token) {
@@ -23,7 +40,29 @@ const GetIssuesCountByStatus = () => {
         }
 
         // Gọi API với header đúng
-        axios.get(`http://localhost:1000/api/issues/statistics/project/1003`, {
+        axios.get(`http://localhost:1000/api/issues/countByPriority/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Truyền token vào header Authorization
+            },
+        })
+            .then(response => {
+                setPriority(response.data);  // Lưu kết quả vào state
+            })
+            .catch(error => {
+                console.error("Có lỗi khi lấy thống kê vấn đề!", error);
+            });
+    }, [projectId, token]);  // Chỉ phụ thuộc vào projectId và token
+
+    //Biểu đồ nhiệm vụ theo trạng thái
+    useEffect(() => {
+        // Kiểm tra nếu không có token
+        if (!token) {
+            console.error("Không tìm thấy token");
+            return;
+        }
+
+        // Gọi API với header đúng
+        axios.get(`http://localhost:1000/api/issues/countByStatus/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,  // Truyền token vào header Authorization
             },
@@ -36,6 +75,7 @@ const GetIssuesCountByStatus = () => {
             });
     }, [projectId, token]);  // Chỉ phụ thuộc vào projectId và token
 
+
     useEffect(() => {
         if (!token) {
             console.log("không tìm thấy token");
@@ -46,12 +86,11 @@ const GetIssuesCountByStatus = () => {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            params: { projectId: 1003 }
+            params: { projectId: id }
 
         })
             .then(response => {
                 setIssues(response.data);
-                console.log("Nhiem vu" + issues)
             })
             .catch(error => {
                 console.error("Có lỗi khi lấy danh sách nhiệm vụ", error);
@@ -59,19 +98,99 @@ const GetIssuesCountByStatus = () => {
             })
     }, [projectId, token])
 
-    if (!stats) {
-        return <p>Đang tải...</p>;  // Hiển thị thông báo nếu dữ liệu chưa được tải xong
+    //Hiển thị trạng thái nhiệm vụ các thành viên
+    useEffect(() => {
+        if (!token) {
+            console.log("không tìm thấy token");
+            return;
+        }
+
+        axios.get(`http://localhost:1000/api/issues/countByStatusAndAssignee/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+
+
+        })
+            .then(response => {
+                setcountByStatusAndAssignee(response.data);
+            })
+            .catch(error => {
+                console.error("Có lỗi khi lấy danh sách nhiệm vụ", error);
+
+            })
+    }, [projectId, token])
+
+    //Hiển thị nhiệm vụ trong dự án
+    useEffect(() => {
+        if (!token) {
+            console.log("không tìm thấy token");
+            return;
+        }
+
+        axios.get(`http://localhost:1000/api/issues/project/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then(response => {
+                setListIssue(response.data);
+            })
+            .catch(error => {
+                console.error("Có lỗi khi lấy danh sách nhiệm vụ", error);
+
+            })
+    }, [projectId, token])
+
+
+
+    if (!priority || !stats || !countByStatusAndAssignee) {
+        return <p>Đang tải dữ liệu...</p>;  // Hiển thị thông báo nếu dữ liệu chưa được tải xong
     }
+
+    //Biểu đồ Hiển thị trạng thái nhiệm vụ các thành viên
+
+    const labels = Object.keys(countByStatusAndAssignee);
+    const inProgressData = labels.map(user => countByStatusAndAssignee[user].in_progress || 0);
+    const pendingData = labels.map(user => countByStatusAndAssignee[user].pending || 0);
+    const doneData = labels.map(user => countByStatusAndAssignee[user].done || 0);
+
+    const barDataStatus = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Đang làm',
+                data: inProgressData,
+                backgroundColor: '#ff6f61',
+                borderColor: '#ff6f61',
+                borderWidth: 1,
+            },
+            {
+                label: 'Chưa làm',
+                data: pendingData,
+                backgroundColor: '#8884d8',
+                borderColor: '#8884d8',
+                borderWidth: 1,
+            },
+            {
+                label: 'Hoàn thành',
+                data: doneData,
+                backgroundColor: '#ffeb3b',
+                borderColor: '#ffeb3b',
+                borderWidth: 1,
+            }
+        ]
+    };
 
 
 
     // Dữ liệu cho biểu đồ Bar
     const barData = {
-        labels: ['Tổng số nhiệm vụ', 'Chưa làm', 'Đang làm', 'Hoàn thành'],
+        labels: ['Khẩn cấp', 'Quan trọng', 'Bình thường', 'thấp'],
         datasets: [
             {
-                label: 'Nhiệm vụ',
-                data: [stats.total, stats.pending, stats.inProgress, stats.done],  // Dữ liệu cho biểu đồ
+                label: 'Độ ưu tiên',
+                data: [priority.total, priority.High, priority.Medium, priority.Low],  // Dữ liệu cho biểu đồ
                 backgroundColor: ['#8884d8', '#ff6f61', '#ffeb3b', '#4caf50'],  // Màu nền riêng cho từng thanh
                 borderColor: ['#8884d8', '#ff6f61', '#ffeb3b', '#4caf50'],
                 borderWidth: 1,
@@ -116,11 +235,11 @@ const GetIssuesCountByStatus = () => {
 
     // Dữ liệu cho biểu đồ Pie
     const pieData = {
-        labels: ['Tổng số nhiệm vụ', 'Chưa làm', 'Đang làm', 'Hoàn thành'],
+        labels: ['Chưa phân công', 'Chưa làm', 'Đang làm', 'Hoàn thành'],
         datasets: [
             {
                 label: 'Nhiệm vụ',
-                data: [stats.total, stats.pending, stats.inProgress, stats.done],  // Dữ liệu cho biểu đồ
+                data: [stats.notyetassigned, stats.pending, stats.in_progress, stats.done],  // Dữ liệu cho biểu đồ
                 backgroundColor: ['#8884d8', '#ff6f61', '#ffeb3b', '#4caf50'],  // Màu nền riêng cho từng phần
                 borderColor: ['#ffffff'],  // Đường viền màu trắng cho từng phần
                 borderWidth: 1,
@@ -144,52 +263,219 @@ const GetIssuesCountByStatus = () => {
         }
     };
 
+    const columns = [
+        { field: 'id', headerName: 'STT', width: 70 },
+        { field: 'title', headerName: 'Tiêu đề', width: 130 },
+        { field: 'status', headerName: 'Trạng thái', width: 130 },
+        { field: 'assignee', headerName: 'Người được giao', width: 130 },
+        { field: 'dueDate', headerName: 'Ngày hết hạn', width: 130 },
+        { field: 'priority', headerName: 'Độ ưu tiên', width: 130 },
+    ];
+
+
+    const convertPriority = (priority) => {
+        switch (priority) {
+            case 'High':
+                return 'Cao';
+            case 'Medium':
+                return 'Bình thường';
+            case 'Low':
+                return 'Thấp';
+            default:
+                return priority;  // Trả về giá trị gốc nếu không khớp
+        }
+    };
+    const columnsAll = [
+        { field: 'id', headerName: 'STT', width: 70 },
+        { field: 'title', headerName: 'Tiêu đề', width: 300 },
+        { field: 'status', headerName: 'Trạng thái', width: 300 },
+        { field: 'assignee', headerName: 'Người được giao', width: 300 },
+        { field: 'dueDate', headerName: 'Ngày hết hạn', width: 300 },
+        { field: 'priority', headerName: 'Độ ưu tiên', width: 270 },
+    ];
+    const rowsAll = listIssue.map((listIssue, index) => ({
+        id: index + 1,
+        idIssue: listIssue.id,
+        title: listIssue.title,
+        status: convertStatus(listIssue.status), // Đảm bảo rằng convertStatus trả về một giá trị hợp lệ
+        assignee: listIssue.assignee ? listIssue.assignee.fullname : "Chưa được giao",
+        dueDate: listIssue.dueDate,
+        priority: convertPriority(listIssue.priority)
+    }));
+
+
+
+
+
+    const rows = issues.map((issues, index) => ({
+        id: index + 1,
+        idIssue: issues.id,
+        title: issues.title,
+        status: convertStatus(issues.status), // Đảm bảo rằng convertStatus trả về một giá trị hợp lệ
+        assignee: issues.assignee.fullname,
+        dueDate: issues.dueDate,
+        priority: convertPriority(issues.priority)
+    }));
+
+    const handleRowClick = (params) => {
+        const clickedIssue = issues.find(issue => issue.id === params.row.idIssue);
+        navigate(`/project/${id}/issue/${clickedIssue.id}`)
+        setSelectedIssue(clickedIssue); // Cập nhật state với thông tin chi tiết của nhiệm vụ được chọn
+    };
+
+
+
     return (
-        <div style={{ display: 'flex' }}>
-            <div style={{ width: '100%' }}>
-                <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Thống kê vấn đề</h3>
-                <div>
-                    <div style={{ width: '70%', margin: 'auto' }}>
+        // <div>
+        //     <div style={{ display: 'flex' }}>
+        //         <div style={{ width: '100%' }}>
+        //             <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Thống kê độ ưu tiên</h3>
+        //             <div>
+        //                 <div style={{ width: '90%', margin: 'auto' }}>
 
+        //                     <Bar data={barData} options={barOptions} />
+        //                     <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Hình 1: Thống kê nhiệm vụ theo độ ưu tiên</h4>
+        //                 </div>
+        //                 <div style={{ width: '70%', margin: 'auto' }}>
+
+        //                     <Pie data={pieData} options={pieOptions} />
+        //                     <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Hình 2: Thống kê nhiệm vụ được phân công theo biểu đồ tròn</h4>
+        //                 </div>
+        //             </div>
+        //         </div>
+
+        //         <div style={{ width: '100%' }}>
+        //             <div>
+        //                 <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: '25px', fontWeight: '600' }}>Danh sách các nhiệm vụ</h3>
+        //                 <Paper sx={{ height: 450, width: '100%' }}>
+        //                     <DataGrid
+        //                         rows={rows}
+        //                         columns={columns}
+        //                         initialState={{ pagination: { paginationModel } }}
+        //                         pageSizeOptions={[5, 10]}
+        //                         checkboxSelection
+        //                         onRowClick={handleRowClick}
+        //                         sx={{ border: 0 }} />
+
+        //                 </Paper>
+        //                 <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Bảng 1: Danh sách các nhiệm vụ được giao cho bạn</h4>
+        //             </div>
+        //             <div style={{ marginTop: '100px' }}>
+        //                 <h1></h1>
+        //                 <div style={{ margin: 'auto' }}>
+
+        //                     <div style={{ width: '100%' }}>
+        //                         <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Thống kê vấn đề </h3>
+        //                         <div>
+        //                             <div style={{ margin: 'auto' }}>
+
+        //                                 <Bar data={barDataStatus} options={barOptions} />
+        //                                 <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Hình 3: Thống kê phân công nhiệm vụ từng thành viên</h4>
+        //                             </div>
+
+        //                         </div>
+        //                     </div>
+        //                 </div>
+        //             </div>
+
+        //         </div>
+        //     </div>
+        //     <div>
+        //         <div style={{ width: '100%' }}>
+        //             <div>
+        //                 <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: '25px', fontWeight: '600' }}>Danh sách các nhiệm vụ</h3>
+        //                 <Paper sx={{ height: 450, width: '100%' }} >
+        //                     <DataGrid
+        //                         rows={rowsAll}
+        //                         columns={columnsAll}
+        //                         initialState={{ pagination: { paginationModel } }}
+        //                         pageSizeOptions={[5, 10]}
+        //                         checkboxSelection
+        //                         onRowClick={handleRowClick}
+        //                         sx={{ border: 0 }}
+        //                     />
+        //                 </Paper>
+        //             </div>
+        //         </div>
+
+        //     </div>
+        // </div>
+        <div className="container mx-auto p-4 space-y-8">
+
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Thống kê độ ưu tiên</CardTitle>
+                    </CardHeader>
+                    <CardContent>
                         <Bar data={barData} options={barOptions} />
-                        <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Hình 1: Thống kê nhiệm vụ được phân công theo biểu đồ thanh</h4>
-                    </div>
-                    <div style={{ width: '70%', margin: 'auto' }}>
+                    </CardContent>
+                </Card>
 
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Thống kê nhiệm vụ được phân công</CardTitle>
+                    </CardHeader>
+                    <CardContent>
                         <Pie data={pieData} options={pieOptions} />
-                        <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Hình 2: Thống kê nhiệm vụ được phân công theo biểu đồ tròn</h4>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
 
-            <div style={{ width: '100%' }}>
-            <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: '25px', fontWeight: '600' }}>Danh sách các nhiệm vụ</h3>
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-                    <thead>
-                        <tr style={{ backgroundColor: '#f2f2f2', textAlign: 'left' }}>
-                            <th style={{ padding: '8px' }}>ID</th>
-                            <th style={{ padding: '8px' }}>Tiêu đề</th>
-                            <th style={{ padding: '8px' }}>Trạng thái</th>
-                            <th style={{ padding: '8px' }}>Người được giao</th>
-                            <th style={{ padding: '8px' }}>Hạn cuối</th>
-                            <th style={{ padding: '8px' }}>Độ ưu tiên</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {issues.map(issue => (
-                            <tr key={issue.id} style={{ borderBottom: '1px solid #ddd' }}>
-                                <td style={{ padding: '8px' }}>{issue.id}</td>
-                                <td style={{ padding: '8px' }}>{issue.title}</td>
-                                <td style={{ padding: '8px' }}>{convertStatus(issue.status)}</td>
-                                <td style={{ padding: '8px' }}>{issue.assignee.fullname}</td>
-                                <td style={{ padding: '8px' }}>{issue.dueDate}</td>
-                                <td style={{ padding: '8px' }}>{issue.priority}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Thống kê vấn đề</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Bar data={barDataStatus} options={barOptions} />
+                </CardContent>
+            </Card>
+
+            <Tabs defaultValue="your-tasks" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="your-tasks">Nhiệm vụ của bạn</TabsTrigger>
+                    <TabsTrigger value="all-tasks">Tất cả nhiệm vụ</TabsTrigger>
+                </TabsList>
+                <TabsContent value="your-tasks">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Danh sách nhiệm vụ của bạn</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <DataGrid
+                                rows={rows}
+                                columns={columns}
+                                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+                                pageSizeOptions={[5, 10]}
+                                checkboxSelection
+                                onRowClick={handleRowClick}
+                                autoHeight
+                            />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="all-tasks">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Danh sách tất cả nhiệm vụ</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <DataGrid
+                                rows={rowsAll}
+                                columns={columnsAll}
+                                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+                                pageSizeOptions={[5, 10]}
+                                checkboxSelection
+                                onRowClick={handleRowClick}
+                                autoHeight
+                            />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
+
 
     );
 };

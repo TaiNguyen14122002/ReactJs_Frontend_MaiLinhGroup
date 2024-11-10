@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { fetchIssues } from '@/Redux/Issue/Action';
 import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
 import { Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
+import { cn } from '@/lib/utils';
 
 const IssueList = ({ title, status }) => {
     const dispatch = useDispatch();
@@ -49,7 +50,12 @@ const IssueList = ({ title, status }) => {
                                 {issue.issues
                                     .filter(issue => issue.status === status)
                                     .map((item, index) => (
-                                        <TableRow key={item.id} onClick={() => handleRowClick(item.id, id)} style={{ cursor: 'pointer' }} className="hover:bg-gray-200">
+                                        <TableRow
+                                            className={cn(
+                                                item.status === "pending" && "bg-red-50",
+                                                item.status === "in_progress" && "bg-blue-50",
+                                                item.status === "done" && "bg-green-50"
+                                            )} key={item.id} onClick={() => handleRowClick(item.id, id)} style={{ cursor: 'pointer' }} >
                                             <TableCell className="border px-4 py-2">{index + 1}</TableCell>
                                             <TableCell className="border px-4 py-2">{item.title}</TableCell>
                                             <TableCell className="border px-4 py-2">{item.description}</TableCell>

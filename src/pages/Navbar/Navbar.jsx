@@ -1,108 +1,291 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import React, { useEffect, useRef, useState } from 'react'
-import CreateProjectForm from '../Project/CreateProjectForm'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { PersonIcon } from '@radix-ui/react-icons'
-import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { logout } from '@/Redux/Auth/Action'
+} from "@/components/ui/dialog";
+import React, { useEffect, useState } from 'react';
+import CreateProjectForm from '../Project/CreateProjectForm';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { PersonIcon } from '@radix-ui/react-icons';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '@/Redux/Auth/Action';
+import { Layout } from 'antd';
+
+import { FaChartBar, FaTrashRestore } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
+import { FaHome } from "react-icons/fa";
+import { FaUserCheck } from "react-icons/fa";
+import { SlArrowDown } from "react-icons/sl";
+import { SlArrowRight } from "react-icons/sl";
+import { FaBars } from "react-icons/fa";
 
 
+import ItemCard from "./ItemCard";
+import axios from "axios";
+import { BarChart2, ChevronDown, Home, Inbox, LogOut, Plus, PlusCircle, Settings, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+
+
+
+const { Sider } = Layout; // Lấy Sider từ Layout
 
 const Navbar = () => {
+    const [visible, setVisible] = useState(false);
+    const [activeButton, setActiveButton] = useState(null);
+    const { auth } = useSelector(store => store);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isAllExpanded, setIsAllExpanded] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(5);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
-    const [visible, setVisible] = useState(false)
-    const { auth } = useSelector(store => store)
-    const navigate = useNavigate()
+    const [openPinned, setOpenPinned] = useState(true)
+    const [openAll, setOpenAll] = useState(true)
 
+    const colors = [
+        '#FF5733', // Màu 1
+        '#33FF57', // Màu 2
+        '#3357FF', // Màu 3
+        '#FF33A8', // Màu 4
+        '#FFC300', // Màu 5
+        '#DAF7A6', // Màu 6
+        '#FF6347', // Màu 7
+        '#4682B4', // Màu 8
+        '#FFD700', // Màu 9
+        '#ADFF2F'  // Màu 10
+    ];
+
+
+    const token = localStorage.getItem('jwt');
+
+    const [data, setData] = useState([]);
+
+    const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const handleLogout = () => {
-        dispatch(logout())
+        dispatch(logout());
+    };
+
+    const handleButtonClick = (route) => {
+        navigate(route);
+        setActiveButton(route); // Cập nhật nút đang hoạt động
+    };
+
+    const toggleContent = () => {
+        setIsExpanded(!isExpanded);
+    };
+
+    const toggleAllContent = () => {
+        setIsAllExpanded(!isAllExpanded);
+    };
+
+    const handleShowMore = () => {
+        setVisibleCount((prevCount) => prevCount + 5);
+    }
+
+    const projectInformation = (projectId) => {
+        navigate("/project/" + projectId);
+
     }
 
 
+    const fetchDataAllProject = async () => {
+        if (!token) {
+            setErrorMessage("Vui lòng đăng nhập lại");
+            return;
+        }
+
+        try {
+            const response = await axios.get(`http://localhost:1000/api/projects`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log("tokentokentokentoken", response);
+            setData(response.data);
+        } catch (error) {
+
+            console.error(error);
+            setErrorMessage("Đã xẩy ra lỗi khi tải dữ liệu");
+
+        }
+    }
+
+    useEffect(() => {
+        fetchDataAllProject();
+
+        console.log("TaiNguyen", data)
+    }, [])
+
+    const toggleNavbar = () => {
+        setIsNavbarVisible(prev => !prev);
+    };
+
+    const Separator = ({ color = 'gray', thickness = '1px', style = {}, ...props }) => {
+        return (
+            <hr
+                style={{
+                    borderColor: color,
+                    borderWidth: thickness,
+                    ...style,
+                }}
+                {...props}
+            />
+        );
+    };
+
     return (
-        <div className='border-b py-4 px-5 flex items-center justify-between'>
-
-            <div className='flex items-center gap-3'>
-
-                <p onClick={() => navigate("/")} className='cursor-pointer'>
-                    Quản lý dự án
-                </p>
-
-                <Dialog>
-
-                    <DialogTrigger>
-                        <Button variant="ghost">
-                            Kế hoạch mới
+        <div>
+            {/* <div className="flex h-14 items-center border-b px-4">
+                <h2 className="text-lg font-semibold">Project Manager</h2>
+            </div> */}
+            <div className="flex flex-col h-full border-r bg-muted/40">
+                <ScrollArea className="flex-1">
+                    <div className="space-y-4 p-4">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setIsModalOpen(true)}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Thêm dự án mới
                         </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                        <DialogTitle>Edit profile</DialogTitle>
-                        <DialogDescription>
-                            Make changes to your profile here. Click save when you're done.
-                        </DialogDescription>
+                        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                    <DialogTitle>Thêm kế hoạch mới</DialogTitle>
+                                    <DialogDescription>
+                                        Điền thông tin dự án mới của bạn vào đây, Nhấn lưu khi hoàn tất
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <CreateProjectForm />
+                            </DialogContent>
+                        </Dialog>
+                        <div className="space-y-2">
+                            <Button onClick={() => handleButtonClick("/")} variant="secondary" className="w-full justify-start">
+                                <Home className="mr-2 h-4 w-4" />
+                                Trung tâm
+                            </Button>
+                            <Button onClick={() => handleButtonClick("/countproject")} variant="ghost" className="w-full justify-start">
+                                <BarChart2 className="mr-2 h-4 w-4" />
+                                Thống kê
+                            </Button>
+                            <Button onClick={() => handleButtonClick("/upgrade_plan")} variant="ghost" className="w-full justify-start">
+                                <Users className="mr-2 h-4 w-4" />
+                                Đã giao cho tôi
+                            </Button>
+                            <Button variant="ghost" className="w-full justify-start">
+                                <Settings className="mr-2 h-4 w-4" />
+                                Cài đặt
+                            </Button>
+                        </div>
+                        <Separator />
+                        <div>
+                            <h3 className="mb-2 text-sm font-medium">Kế hoạch</h3>
+                            <div className="space-y-1">
+                                <Button onClick={() => handleButtonClick("/project/deleted")} variant="ghost" className="w-full justify-start font-normal">
+                                    Kế hoạch đã xoá
 
-                        <CreateProjectForm />
-                    </DialogContent>
+                                </Button>
+                                <Button onClick={() => handleButtonClick("/project/expiring")} variant="ghost" className="w-full justify-start font-normal">
+                                    Kế hoạch sắp hết hạn
+                                </Button>
+                                <Button onClick={() => handleButtonClick("/project/expired")} variant="ghost" className="w-full justify-start font-normal">
+                                    Kế hoạch đã trễ
+                                </Button>
+                            </div>
+                        </div>
+                        <Separator />
 
-                </Dialog>
-                <Button onClick={() => navigate("/upgrade_plan")} variant="ghost">
-                    Nhiệm vụ cho tôi
-                </Button>
+                        <div>
+                            <h3 className="mb-2 text-sm font-medium">Tác vụ</h3>
+                            <div className="space-y-1">
+                                <Button variant="ghost" className="w-full justify-start font-normal">
+                                    Tác vụ sắp hết hạn
+                                </Button>
+                                <Button variant="ghost" className="w-full justify-start font-normal">
+                                    Tác vụ đã trễ
+                                </Button>
+                            </div>
+                        </div>
 
-                <Button onClick={() => navigate("/countproject")} variant="ghost">
-                    Thống kê
-                </Button>
+                        <div>
+                            <div
+                                onClick={toggleContent}
+                                className="space-y-2"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold tracking-tight">Dự án đã ghim</h3>
+                                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isExpanded ? "rotate-180" : "")} />
+                                    <span className="sr-only">Toggle pinned projects</span>
+                                </div>
 
-                <Button onClick={() => navigate("/project/status" )} variant="ghost">
-                    Giới thiệu
-                </Button>
+
+                            </div>
+                            {isExpanded && (
+                                <div className="mt-1 space-y-1">
+
+                                    {data.slice(0, visibleCount).map((item, index) => (
+                                        <ItemCard onClick={() => projectInformation(item.id)} key={item.id} label={item.name.charAt(0)} color={colors[index % colors.length]} title={item.name} />
+                                    ))}
+
+                                    {visibleCount < data.length && (
+                                        <h2
+                                            onClick={handleShowMore}
+                                            className="mt-4 text-blue-500 hover:underline">
+                                            Xem thêm
+                                        </h2>
+                                    )}
+                                </div>
+                            )}
+
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                            <div
+                                onClick={toggleAllContent}
+                                className="space-y-2"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold tracking-tight">Tất cả dự án</h3>
+                                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isAllExpanded ? "rotate-180" : "")} />
+                                    <span className="sr-only">Toggle pinned projects</span>
+                                </div>
 
 
+                            </div>
+                            {isAllExpanded && (
+                                <div className="mt-1 space-y-1">
 
+                                    {data.slice(0, visibleCount).map((item, index) => (
+                                        <ItemCard onClick={() => projectInformation(item.id)} key={item.id} label={item.name.charAt(0)} color={colors[index % colors.length]} title={item.name} />
+                                    ))}
+
+                                    {visibleCount < data.length && (
+                                        <h2
+                                            onClick={handleShowMore}
+                                            className="mt-4 text-blue-500 hover:underline">
+                                            Xem thêm
+                                        </h2>
+                                    )}
+                                </div>
+                            )}
+
+                        </div>
+                    </div>
+                </ScrollArea>
             </div>
-
-            <div className='flex gap-3 items-center'>
-                <DropdownMenu>
-                    <DropdownMenuTrigger>
-                        <Button variant="outline" size="icon" className="rounded-full border-2 border-gray-500">
-                            <PersonIcon />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handleLogout}>
-                            Đự án đã xoá
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogout}>
-                            Thông tin cá nhân
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogout}>
-                            Đổi mật khẩu
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogout}>
-                            Đăng xuất
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <p>{auth.user?.fullname}</p>
-
-            </div>
-
+            
         </div>
-    )
-}
+    );
+};
 
-export default Navbar
+export default Navbar;

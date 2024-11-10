@@ -21,3 +21,56 @@
     margin-top: 1rem;
   }
   
+  /* App.css hoặc file CSS tương ứng */
+/* App.css hoặc file CSS tương ứng */
+.site-layout-background {
+  background-color: #f0f2f5; /* Màu nền cho sidebar */
+
+  background-color: aliceblue;
+}
+
+.sidebar {
+  position: fixed; /* Giữ sidebar cố định */
+  top: 0; /* Vị trí từ trên cùng */
+  left: 0; /* Vị trí từ bên trái */
+  height: 100vh; /* Chiều cao 100% của viewport */
+  width: 300px; /* Độ rộng của sidebar */
+  overflow-y: auto; /* Thêm cuộn nếu nội dung quá nhiều */
+  padding: 16px; /* Padding cho nội dung */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Đổ bóng cho sidebar */
+  z-index: 1000; /* Đảm bảo sidebar nằm trên cùng */
+
+  background-color: aliceblue;
+}
+
+.sidebar .flex {
+  margin-bottom: 16px; /* Khoảng cách giữa các phần tử */
+}
+
+.sidebar p {
+  font-size: 16px; /* Kích thước chữ */
+  cursor: pointer; /* Con trỏ khi hover */
+}
+
+.sidebar button {
+  width: 100%; /* Đảm bảo nút có chiều rộng 100% */
+}
+
+/* App.css hoặc file CSS tương ứng */
+.app-container {
+  display: flex;
+  grid-template-columns: 250px 1fr; /* Sidebar 250px, phần còn lại là nội dung chính */
+  height: 100vh; /* Đặt chiều cao 100% cho viewport */
+}
+.cuisor-pointer {
+  cursor: pointer; /* Chuyển con trỏ chuột thành dạng pointer khi di chuột qua */
+}
+
+aside {
+  position: fixed;
+  top: 64px; /* điều chỉnh chiều cao header */
+  height: calc(100vh - 64px);
+}
+
+
+
