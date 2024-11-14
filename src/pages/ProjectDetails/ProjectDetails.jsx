@@ -31,6 +31,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import Calender from '../Calender/Calender'
 
 
 
@@ -51,7 +52,7 @@ const ProjectDetails = () => {
   const maxRating = 5
   const [rating, setRating] = useState(0)
 
-  const {projectstatus, setProjectStatus} = useState(project.projectDetails?.status)
+  const { projectstatus, setProjectStatus } = useState(project.projectDetails?.status)
 
 
 
@@ -276,6 +277,83 @@ const ProjectDetails = () => {
     }
   }
 
+  const [inforUser, setInfoUser] = useState([]);
+  const [inforProject, setInfoProject] = useState([]);
+
+  const fetchUser = async () => {
+    try {
+      const response = await axios.get(`http://localhost:1000/api/users/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Thông tin ngừoi dùng", response.data);
+      setInfoUser(response.data);
+
+    } catch (error) {
+      console.log('Có lỗi xẩy ra trong quá trình thực hiện dữ liệu', error)
+    }
+  }
+
+  const fetchProject = async () => {
+    try {
+      const response = await axios.get(`http://localhost:1000/api/projects/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Thông tin dự án", response.data);
+      setInfoProject(response.data);
+    } catch (error) {
+      console.log('Có lỗi xẩy ra trong quá trình thực hiện dữ liệu', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchUser();
+    fetchProject();
+    return;
+  }, [])
+
+  const ExportToExcel = async() => {
+
+    if(inforUser.id === inforProject.owner?.id){
+      try{
+
+        const response = await axios.get(`http://localhost:1000/api/projects/projects/${id}/issues/export`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
+          responseType: "arraybuffer",
+        });
+        const file = new Blob([response.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(file);
+        link.download = "report.xlsx";
+        link.click();
+        toast.success(
+          <div>
+            <strong>Tải xuống</strong>
+            <p>Bạn đã tải xuống thống kê của kế hoạch ${inforProject.name}.</p>
+          </div>
+        )
+
+      }catch(error){
+        console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error)
+      }
+    }else{
+      toast.error(
+        <div>
+          <strong>Lỗi Tải xuống</strong>
+          <p>Chỉ có người tạo tự án mới có thể tải xuống</p>
+        </div>
+      )
+    }
+  }
+
 
   return (
     <>
@@ -388,7 +466,7 @@ const ProjectDetails = () => {
                         <Pin className="h-4 w-4" />
                         <span className="sr-only">Pin project</span>
                       </Button>
-                      <Button variant="outline" size="icon" title="Tải xuống báo cáo Excel">
+                      <Button onClick={ExportToExcel} variant="outline" size="icon" title="Tải xuống báo cáo Excel">
                         <Download className="h-4 w-4" />
                         <span className="sr-only">Download Excel report</span>
                       </Button>
@@ -842,7 +920,11 @@ const ProjectDetails = () => {
             )}
 
             {activeMainTab === 'Calender' && (
-              <h1>TaiNguyen</h1>
+              <ScrollArea className="h-screen lg:w-[100%] pr-2">
+                
+                <Calender/>
+              </ScrollArea>
+
             )}
 
 

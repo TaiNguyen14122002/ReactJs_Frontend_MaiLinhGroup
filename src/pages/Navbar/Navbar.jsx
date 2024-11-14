@@ -145,7 +145,7 @@ const Navbar = () => {
     };
 
     return (
-        <div>
+        <div className="flex j">
             {/* <div className="flex h-14 items-center border-b px-4">
                 <h2 className="text-lg font-semibold">Project Manager</h2>
             </div> */}
@@ -283,7 +283,27 @@ const Navbar = () => {
                     </div>
                 </ScrollArea>
             </div>
-            
+
+            {/* <div className="mt-auto p-4">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-start">
+                            <Avatar className="mr-2 h-6 w-6">
+                                <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
+                                <AvatarFallback>JD</AvatarFallback>
+                            </Avatar>
+                            {auth.user?.fullname}
+                            <ChevronDown className="ml-auto h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[200px]">
+                        <DropdownMenuItem className="hover:bg-zinc-800">Profile</DropdownMenuItem>
+                        <DropdownMenuItem className="hover:bg-zinc-800">Settings</DropdownMenuItem>
+                        <DropdownMenuItem className="hover:bg-zinc-800" onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div> */}
+
         </div>
     );
 };

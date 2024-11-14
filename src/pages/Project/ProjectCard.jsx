@@ -23,12 +23,12 @@ const ProjectCard = ({ item }) => {
 
     const UpdateProjectPinned = async () => {
         try {
-            
+
             if (!token) {
                 console.error("Token không tồn tại");
                 return;
             }
-    
+
             const response = await axios.put(
                 `http://localhost:1000/api/projects/${item.id}/update-action`,
                 {},
@@ -38,10 +38,31 @@ const ProjectCard = ({ item }) => {
                     }
                 }
             );
-    
+
             console.log(response.data);
         } catch (error) {
             console.log("Có lỗi xảy ra khi Ghim dự án", error);
+        }
+    }
+
+    const UpdateProjectAction = async () => {
+        try {
+            const response = await axios.put(
+                `http://localhost:1000/api/projects/${item.id}/update-action-deleted`,
+                { action: -1 },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    params: {
+                        action: -1
+                    }
+                }
+            );
+            console.log("Dữ liệu nhận được từ API:", response);
+            console.log("Dữ liệu sau khi được cập nhật", response.data);
+        } catch (error) {
+            console.log("Có lỗi xảy ra trong quá trình thực hiện dữ liệu", error);
         }
     }
 
@@ -65,7 +86,7 @@ const ProjectCard = ({ item }) => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => UpdateProjectPinned()}>Ghim</DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleDelete}>Xoá kế hoạch</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => UpdateProjectAction()}>Xoá kế hoạch</DropdownMenuItem>
                                 <DropdownMenuItem >Xuất thống kê</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -95,7 +116,7 @@ const ProjectCard = ({ item }) => {
                 </div>
             </CardContent>
         </Card>
-        
+
     )
 }
 

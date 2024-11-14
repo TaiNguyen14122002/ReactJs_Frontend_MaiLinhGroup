@@ -77,7 +77,7 @@ const IssueList = ({ title, status }) => {
                         <DialogTrigger>
                             <Button variant="outline" className="w-full flex items-center gap-2">
                                 <PlusIcon />
-                                Thêm nhiệm vụ
+                                Thêm tác vụ
                             </Button>
                         </DialogTrigger>
                     </CardFooter>
@@ -85,7 +85,7 @@ const IssueList = ({ title, status }) => {
 
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Thêm nhiệm vụ mới</DialogTitle>
+                        <DialogTitle></DialogTitle>
                     </DialogHeader>
                     <CreateIssueForm status={status} />
                 </DialogContent>

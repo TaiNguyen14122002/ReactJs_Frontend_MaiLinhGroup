@@ -26,6 +26,7 @@ const BreadcrumbComponent = () => {
                               pathname === 'status' ? 'Thống kê' :
                               pathname === 'upgrade_plan' ? 'Đã giao cho tôi' :
                               pathname === 'Issue' ? 'Nhiệm vụ' :
+                              pathname === 'Countproject'  ? 'Thống kê hoa hồng' :
                               pathname.charAt(0).toUpperCase() + pathname.slice(1);
 
           return (

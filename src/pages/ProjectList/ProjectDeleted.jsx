@@ -6,11 +6,13 @@ import axios from 'axios'
 import { CalendarIcon, ClockIcon, RefreshCw, TagIcon, Trash2, UserIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { toast } from 'react-toastify'
 
 const ProjectDeleted = () => {
   const [listProjectDeleted, setListProjectDeleted] = useState([])
   const token = localStorage.getItem('jwt')
   const dispatch = useDispatch();
+
 
   const fetchProjectDeleted = async () => {
     if (!token) {
@@ -23,6 +25,7 @@ const ProjectDeleted = () => {
         },
       });
       console.log("Dự án đã xoá", response.data);
+      
       setListProjectDeleted(response.data);
 
     } catch (error) {
@@ -37,6 +40,9 @@ const ProjectDeleted = () => {
 
   const handleDelete = (projectId) => {
     dispatch(deleteProject({ projectId }));
+    toast.success(
+      "Bạn đã xoá dự án thành công"
+    )
     fetchProjectDeleted();
 };
   return (

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { DialogClose } from '@/components/ui/dialog'
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import React from 'react'
@@ -10,113 +10,240 @@ import { Cross1Icon } from '@radix-ui/react-icons'
 import { useDispatch } from 'react-redux'
 import { createIssue } from '@/Redux/Issue/Action'
 import { useParams } from 'react-router-dom'
+import { Textarea } from '@/components/ui/textarea'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+import { CalendarIcon } from 'lucide-react'
+import { Calendar } from '@/components/ui/calendar'
+import { format } from 'date-fns'
 
-const CreateIssueForm = ({status}) => {
-    const {id} = useParams();
+const CreateIssueForm = ({ status }) => {
+    //     const {id} = useParams();
+    //     const dispatch = useDispatch();
+    //   const form = useForm({
+    //     // resolver: zod
+    //     defaultValues: {
+    //         issueName: "",
+    //         description: "",
+    //         priority: "",
+    //         startDate: "",
+    //         dueDate: ""
+    //     },
+    // })
+
+    // const onSubmit = (data) => {
+    //     data.projectId = id;
+
+    //     dispatch(createIssue({
+    //         title: data.issueName, 
+    //         description: data.description, 
+    //         projectId: id,
+    //         priority: data.priority,
+    //         startDate: data.startDate,
+    //         dueDate: data.dueDate,
+    //         status,
+    //     }))
+    //     console.log("create issue data:", data);
+    // };
+    const { id } = useParams();
     const dispatch = useDispatch();
-  const form = useForm({
-    // resolver: zod
-    defaultValues: {
-        issueName: "",
-        description: "",
-        priority: "",
-        dueDate: ""
-    },
-})
 
-const onSubmit = (data) => {
-    data.projectId = id;
+    // Khởi tạo useForm với defaultValues cho các trường
+    const form = useForm({
+        defaultValues: {
+            issueName: "",
+            description: "",
+            priority: "",
+            startDate: null,
+            dueDate: null,
+        },
+    });
 
-    dispatch(createIssue({
-        title: data.issueName, 
-        description: data.description, 
-        projectId: id,
-        priority: data.priority,
-        dueDate: data.dueDate,
-        status,
-    }))
-    console.log("create issue data:", data);
-};
-    
+    const onSubmit = (data) => {
+        data.projectId = id;
 
-  return (
-    <div>
-      <Form {...form}>
-                <form className='space-y-5' onSubmit={form.handleSubmit(onSubmit)}>
-                    <FormField control={form.control}
+        dispatch(createIssue({
+            title: data.issueName,
+            description: data.description,
+            projectId: id,
+            priority: data.priority,
+            startDate: data.startDate,
+            dueDate: data.dueDate,
+            status,
+        }));
+        console.log("create issue data:", data);
+    };
+
+
+    return (
+        // <div>
+        //   <Form {...form}>
+        //             <form className='space-y-5' onSubmit={form.handleSubmit(onSubmit)}>
+        //                 <FormField control={form.control}
+        //                     name="issueName"
+        //                     render={({ field }) => <FormItem>
+        //                         <FormControl>
+        //                             <Input {...field}
+        //                                 type="text"
+        //                                 className="border w-full bordergray-700 py-5 px-5"
+        //                                 placeholder="Tên nhiệm vụ ..." />
+        //                         </FormControl>
+        //                         <FormMessage />
+        //                     </FormItem>}
+        //                 />
+        //                 <FormField control={form.control}
+        //                     name="description"
+        //                     render={({ field }) => <FormItem>
+        //                         <FormControl>
+        //                             <Input {...field}
+        //                                 type="text"
+        //                                 className="border w-full bordergray-700 py-5 px-5"
+        //                                 placeholder="Mô tả ..." />
+        //                         </FormControl>
+        //                         <FormMessage />
+        //                     </FormItem>}
+        //                 />
+        //                 <FormField control={form.control}
+        //                     name="priority"
+        //                     render={({ field }) => <FormItem>
+        //                         <FormControl>
+        //                             <Select
+        //                                 defaultValue='Medium'
+        //                                 value={field.value}
+        //                                 onValueChange={(value) => {
+        //                                     field.onChange(value)
+        //                                 }}
+
+        //                             // className="border w-full bordergray-700 py-5 px-5"
+        //                             >
+        //                                 <SelectTrigger className="w-full">
+        //                                     <SelectValue placeholder="Độ ưu tiên" />
+
+        //                                 </SelectTrigger>
+        //                                 <SelectContent>
+        //                                     <SelectItem value="Low">Thấp</SelectItem>
+        //                                     <SelectItem value="Medium">Bình thường</SelectItem>
+        //                                     <SelectItem value="High">Cao</SelectItem>
+        //                                 </SelectContent>
+        //                             </Select>
+
+        //                         </FormControl>
+        //                         <FormMessage />
+        //                     </FormItem>}
+        //                 />
+        //                 <FormField control={form.control}
+        //                     name="dueDate"
+        //                     render={({ field }) => <FormItem>
+        //                         <FormControl>
+        //                             <Input {...field}
+        //                                 type="date"
+        //                                 className="border w-full bordergray-700 py-5 px-5"
+        //                                 placeholder="Ngày hết hạn ..." />
+        //                         </FormControl>
+        //                         <FormMessage />
+        //                     </FormItem>}
+        //                 />
+
+        //                 <DialogClose>
+        //                     <Button type="submit" className="w-full mt-5 ">
+        //                         Thêm
+        //                         </Button>
+        //                 </DialogClose>
+        //             </form>
+        //         </Form>
+        // </div>
+        <div className="w-full max-w-md mx-auto p-6 space-y-6 bg-card rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-center text-foreground">Tạo Tác Vụ Mới</h2>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                        control={form.control}
                         name="issueName"
-                        render={({ field }) => <FormItem>
-                            <FormControl>
-                                <Input {...field}
-                                    type="text"
-                                    className="border w-full bordergray-700 py-5 px-5"
-                                    placeholder="Tên nhiệm vụ ..." />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Tên tác vụ</FormLabel>
+                                <FormControl>
+                                    <Input {...field} placeholder="Nhập tên tác vụ..." className="w-full" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    <FormField control={form.control}
+                    <FormField
+                        control={form.control}
                         name="description"
-                        render={({ field }) => <FormItem>
-                            <FormControl>
-                                <Input {...field}
-                                    type="text"
-                                    className="border w-full bordergray-700 py-5 px-5"
-                                    placeholder="Mô tả ..." />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Mô tả</FormLabel>
+                                <FormControl>
+                                    <Textarea {...field} placeholder="Nhập mô tả..." className="w-full" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    <FormField control={form.control}
+                    <FormField
+                        control={form.control}
                         name="priority"
-                        render={({ field }) => <FormItem>
-                            <FormControl>
-                                <Select
-                                    defaultValue='Medium'
-                                    value={field.value}
-                                    onValueChange={(value) => {
-                                        field.onChange(value)
-                                    }}
-
-                                // className="border w-full bordergray-700 py-5 px-5"
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Độ ưu tiên" />
-
-                                    </SelectTrigger>
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Độ ưu tiên</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Chọn độ ưu tiên" />
+                                        </SelectTrigger>
+                                    </FormControl>
                                     <SelectContent>
                                         <SelectItem value="Low">Thấp</SelectItem>
                                         <SelectItem value="Medium">Bình thường</SelectItem>
                                         <SelectItem value="High">Cao</SelectItem>
                                     </SelectContent>
                                 </Select>
-
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>}
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
                     <FormField control={form.control}
-                        name="dueDate"
-                        render={({ field }) => <FormItem>
+                        name="startDate"
+                        render={({ field }) => <FormItem className="flex flex-col">
+                            <FormLabel>Ngày bắt đầu</FormLabel>
                             <FormControl>
                                 <Input {...field}
                                     type="date"
                                     className="border w-full bordergray-700 py-5 px-5"
                                     placeholder="Ngày hết hạn ..." />
+
                             </FormControl>
+
                             <FormMessage />
                         </FormItem>}
                     />
-                    
-                    <DialogClose>
-                        <Button type="submit" className="w-full mt-5 ">
-                            Thêm
-                            </Button>
+                    <FormField control={form.control}
+                        name="dueDate"
+                        render={({ field }) => <FormItem className="flex flex-col">
+                            <FormLabel>Ngày kết thúc</FormLabel>
+                            <FormControl>
+                                <Input {...field}
+                                    type="date"
+                                    className="border w-full bordergray-700 py-5 px-5"
+                                    placeholder="Ngày hết hạn ..." />
+
+                            </FormControl>
+
+                            <FormMessage />
+                        </FormItem>}
+                    />
+
+                    <DialogClose asChild>
+                        <Button type="submit" className="w-full">
+                            Tạo Tác Vụ
+                        </Button>
                     </DialogClose>
                 </form>
             </Form>
-    </div>
-  )
+        </div>
+    )
 }
 
 export default CreateIssueForm

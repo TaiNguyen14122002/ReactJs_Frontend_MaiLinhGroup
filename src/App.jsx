@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getUser } from './Redux/Auth/Action';
+import { getUser, logout } from './Redux/Auth/Action';
 import { fetchProjects } from './Redux/Project/Action';
 import Home from './pages/Home/Home';
 import Navbar from './pages/Navbar/Navbar';
@@ -12,17 +12,17 @@ import CountProjectByUser from './pages/Chart/Issue/CountProjectByUser';
 import GetIssuesCountByStatus from './pages/Chart/Issue/GetIssuesCountByStatus';
 import { Button } from "@/components/ui/button";
 
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { FaBars, FaChartBar, FaHome } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa";
 import { FaUserCheck } from "react-icons/fa";
 import { SlArrowDown } from "react-icons/sl";
 import { SlMenu } from "react-icons/sl";
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 
 import BreadcrumbComponent from './pages/Navbar/BreadcrumbComponent';
-import { Badge, BarChart2, Bell, Check, ChevronDown, ChevronLeft, Menu, Plus, PlusCircle, Settings, Users, X } from 'lucide-react';
+import { Badge, BarChart2, Bell, Check, ChevronDown, ChevronLeft, LogOut, Menu, Plus, PlusCircle, Settings, User, Users, X } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@radix-ui/react-dialog';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { DialogHeader } from '@chakra-ui/react';
@@ -37,6 +37,8 @@ import { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover
 import ProjectListExpiring from './pages/ProjectList/ProjectListExpiring';
 import ProjectExpired from './pages/ProjectList/ProjectExpired';
 import ProjectDeleted from './pages/ProjectList/ProjectDeleted';
+import Calender from './pages/Calender/Calender';
+import Setting from './pages/Information/Setting';
 
 function App() {
   const dispatch = useDispatch();
@@ -82,20 +84,51 @@ function App() {
     })
   }
 
+  const [activeTab, setActiveTab] = useState(null);
+  const handleActiTab = (activitiTab) => {
+    console.log("Lựa chọn", activitiTab)
+    setActiveTab(activitiTab);
+   
+  }
+  const navigate = useNavigate();
+  const [activeButton, setActiveButton] = useState(null);
+
+  const handleButtonClick = (route) => {
+    navigate(route);
+    setActiveButton(route); // Cập nhật nút đang hoạt động
+};
+
+const toggleNavbarVisibility = () => {
+  setIsNavbarVisible(prevState => !prevState);
+};
+
+
 
 
 
   return (
     <>
+
       {
         auth.user ? (
           <div className="min-h-screen bg-background">
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
             <header className="flex h-16 items-center border-b px-4 lg:px-6">
               <Button
                 variant="ghost"
                 size="icon"
                 className="mr-2 lg:hidden"
-                onClick={() => setIsNavbarVisible(true)}
+                onClick={toggleNavbarVisibility}
               >
                 <Menu className="h-6 w-6" />
               </Button>
@@ -149,7 +182,7 @@ function App() {
             <div className="flex">
               <aside
                 className={cn(
-                  "sticky top-16 z-20 h-[calc(100vh-4rem)] w-64 border-r bg-background transition-transform lg:static lg:translate-x-0",
+                  "fixed top-16 z-20 h-[calc(100vh-4rem)] w-64 border-r bg-background transition-transform lg:static lg:translate-x-0",
                   !isNavbarVisible && "-translate-x-full"
                 )}
               >
@@ -180,9 +213,24 @@ function App() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-[200px]">
-                        <DropdownMenuItem className="hover:bg-zinc-800">Profile</DropdownMenuItem>
-                        <DropdownMenuItem className="hover:bg-zinc-800">Settings</DropdownMenuItem>
-                        <DropdownMenuItem className="hover:bg-zinc-800" onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+                        <DropdownMenuItem className="hover:bg-zinc-800">
+                          <Button variant="ghost" className="w-full justify-start" onClick={() => handleButtonClick("/user/information")}>
+                            <User className="mr-2 h-4 w-4" />
+                            Tổng quan
+                          </Button>
+                        </DropdownMenuItem>
+                        {/* <DropdownMenuItem className="hover:bg-zinc-800">
+                          <Button variant="ghost" className="w-full justify-start" onClick={() => handleActiTab("settings")}>
+                            <Settings className="mr-2 h-4 w-4" />
+                            Cài đặt
+                          </Button>
+                        </DropdownMenuItem> */}
+                        <DropdownMenuItem className="hover:bg-zinc-800" onClick={handleLogout}>
+                          <Button variant="ghost" className="w-full justify-start text-red-500 mt-auto">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Đăng xuất
+                          </Button>
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -194,6 +242,7 @@ function App() {
                   <BreadcrumbComponent />
                   {/* Project Cards */}
                   <div className=" md:grid-cols-2 lg:grid-cols-3">
+
                     <Routes>
                       <Route path='/' element={<Home />} />
                       <Route path='/project/:id' element={<ProjectDetails />} />
@@ -202,9 +251,11 @@ function App() {
                       <Route path='/accept_invitation' element={<AcceptInvitation />} />
                       <Route path='/countproject' element={<CountProjectByUser />} />
                       <Route path='/project/status' element={<GetIssuesCountByStatus />} />
-                      <Route path='/project/expiring' element={<ProjectListExpiring/>}/>
-                      <Route path='/project/expired' element={<ProjectExpired/>}/>
-                      <Route path='/project/deleted' element={<ProjectDeleted/>}/>
+                      <Route path='/project/expiring' element={<ProjectListExpiring />} />
+                      <Route path='/project/expired' element={<ProjectExpired />} />
+                      <Route path='/project/deleted' element={<ProjectDeleted />} />
+                      <Route path='/project/calender' element={<Calender />} />
+                      <Route path='/user/information' element={<Setting/>}/>
                     </Routes>
                   </div>
                 </div>
