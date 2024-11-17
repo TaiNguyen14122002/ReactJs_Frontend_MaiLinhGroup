@@ -10,9 +10,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import { fetchIssueById, updateIssueStatus } from "@/Redux/Issue/Action";
 import { fetchComments } from "@/Redux/Comment/Action";
-import { CalendarIcon, FileText, LinkIcon, MenuIcon, SendIcon, Star, TagIcon, Upload, UploadIcon, User } from "lucide-react";
+import { CalendarIcon, Edit2, FileText, Flag, LinkIcon, MenuIcon, SendIcon, Star, TagIcon, Upload, UploadIcon, User } from "lucide-react";
 // import { Card, Progress } from "antd";
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createComment } from "@/Redux/Comment/Action";
@@ -44,6 +44,8 @@ const IssueDetails = () => {
 
 
 
+
+
   const [status, setStatus] = useState(issue.issueDetails?.status)
 
   const handleUpdateIssueStatus = (status) => {
@@ -63,7 +65,7 @@ const IssueDetails = () => {
   useEffect(() => {
     dispatch(fetchIssueById(issueId));
     dispatch(fetchComments(issueId))
-  }, [issueId])
+  }, [dispatch, issueId])
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0]
@@ -93,8 +95,7 @@ const IssueDetails = () => {
     setNewComment("");
   }
 
-  const [rating, setRating] = useState(0)
-  const [progress, setProgress] = useState(0)
+
 
 
   const [activities, setActivities] = useState([])
@@ -147,23 +148,63 @@ const IssueDetails = () => {
     }
   }
 
+
+
   useEffect(() => {
     fetchUser();
     fetchProject();
     return;
   }, [])
 
+  // const fetchIssue = async() => {
+  //   if (inforUser.id === inforProject.owner?.id){
+  //     try{
+  //       const response = await axios.get(`http://localhost:1000/api/issues/project/${projectId}`, {}, {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`
+  //         }
+  //       });
+  //       console.log
+
+  //     }catch(error){
+  //       console.log("Có lỗi xảy ra trong quá trình thực hiện", error)
+  //     }
+  //   }
+  // }
+
+  const [rating, setRating] = useState(issue.issueDetails?.finish / 20);
+  const [progress, setProgress] = useState(issue.issueDetails?.finish);
+
+  const addUserIssueSalaries = async(value) => {
+    try{
+      const requestData = {
+        userId: issue.issueDetails.assignee.id,
+        issueId: issueId,
+        salary: issue.issueDetails?.price * (value / 100),
+      }
+
+      console.log("Lương tiến độ", requestData)
+      const response = await axios.post(`http://localhost:1000/api/salaries/addSalaries`, {}, {
+        params: requestData,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Done")
+
+    }catch(error){
+      console.log("Có lỗi xảy ra trong quá trình thực hiện", error)
+    }
+  }
+
+
   const handleRating = (value) => {
     if (inforUser.id === inforProject.owner?.id) {
-      setRating(value)
-      setProgress(value * 20) // Convert 5-star rating to percentage
+
+      updateFinishIssue(value)
+
       addActivity(`Đánh giá đã được cập nhật thành ${value} sao`)
-      toast.success(
-        <div>
-          <strong>Đánh giá thành công</strong>
-          <p>Bạn đã đánh giá tác vụ ${issue.issueDetails?.title} ${value} sao.</p>
-        </div>
-      )
+      
     } else {
       toast.error(
         <div>
@@ -172,7 +213,6 @@ const IssueDetails = () => {
         </div>
       )
     }
-
   }
 
   console.log("Nguowfi dufng", inforUser.id)
@@ -268,56 +308,63 @@ const IssueDetails = () => {
       });
   };
 
+  const updateFinishIssue = async (value) => {
+    if (inforUser.id === inforProject.owner?.id) {
+      try {
+        const response = await axios.put(
+          `http://localhost:1000/api/issues/${issueId}/finish/${value * 20}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("Đánh giá thành công")
+
+        if(issue.issueDetails?.finish === null || issue.issueDetails?.finish === undefined){
+          addUserIssueSalaries(value * 20);
+        }else{
+          addUserIssueSalaries(value * 20);
+          // console.log("Cập nhập lương")
+        }
+        
+        dispatch(fetchIssueById(issueId));
+
+        toast.success(
+          <div>
+            <strong>Đánh giá thành công</strong>
+            <p>Bạn đã đánh giá tác vụ {issue.issueDetails?.title} {value} sao.</p>
+          </div>
+        )
+      } catch (error) {
+        console.log("Có lỗi xảy ra trong quá trình thực hiện", error)
+      }
 
 
+    } else {
+      toast.error(
+        <div>
+          <strong>Lỗi</strong>
+          <p>Bạn không phải chủ kế hoạch</p>
+        </div>
+      )
+    }
 
+  }
 
-  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0]
-  //   if (file) {
-  //     const newAttachment = { name: file.name, size: `${(file.size / 1024 / 1024).toFixed(1)} MB` }
-  //     setAttachments(prev => [...prev, newAttachment])
-  //     addActivity(`Tệp "${file.name}" đã được tải lên`)
-  //   }
-  // }
+  const formatPrice = new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  });
 
-  // const handleDateChange = (newDate: Date | undefined) => {
-  //   if (newDate) {
-  //     setDate(newDate)
-  //     setCurrentTask(prev => ({ ...prev, dueDate: format(newDate, 'yyyy-MM-dd') }))
-  //     addActivity(`Ngày hết hạn đã được đặt thành ${format(newDate, 'dd/MM/yyyy')}`)
-  //   }
-  // }
-
-  // const handleDescriptionChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-  //   const newDescription = event.target.value
-  //   setDescription(newDescription)
-  //   setCurrentTask(prev => ({ ...prev, description: newDescription }))
-  // }
-
-  // const handleStatusChange = (newStatus: string) => {
-  //   setCurrentTask(prev => ({ ...prev, status: newStatus }))
-  //   addActivity(`Trạng thái đã được cập nhật thành ${newStatus}`)
-  // }
-
-  // const handlePriorityChange = (newPriority: string) => {
-  //   setCurrentTask(prev => ({ ...prev, priority: newPriority }))
-  //   addActivity(`Độ ưu tiên đã được cập nhật thành ${newPriority}`)
-  // }
-
-  // useEffect(() => {
-  //   if (description !== currentTask.description) {
-  //     const timer = setTimeout(() => {
-  //       addActivity("Mô tả tác vụ đã được cập nhật")
-  //     }, 2000)
-  //     return () => clearTimeout(timer)
-  //   }
-  // }, [description, currentTask.description])
-
+  const price = issue.issueDetails?.price;  // Giá trị mặc định là 0 nếu không có giá trị
+const formattedPrice = formatPrice.format(price);
 
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 p-8">
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -332,21 +379,32 @@ const IssueDetails = () => {
 
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">{issue.issueDetails?.title}</h1>
-          <Badge variant="secondary" className="text-lg py-1 px-3">{issue.issueDetails?.priority}</Badge>
+          <div className="flex items-center space-x-2">
+            <CardTitle className="text-2xl font-bold text-blue-900">{issue.issueDetails?.title}</CardTitle>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-100">
+              <Edit2 className="h-4 w-4" />
+              <span className="sr-only">Edit task ID</span>
+            </Button>
+          </div>
+
+          <Button variant="outline" size="sm" className="text-indigo-700 border-indigo-300 hover:bg-indigo-100">
+            {issue.issueDetails?.priority}
+            <Flag className="ml-2 h-4 w-4 text-indigo-600" />
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-8">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <Label className="text-xl">Task ID: TV - {issue.issueDetails?.id}</Label>
+                <Label className="text-xl text-blue-800">Task ID: TV - {issue.issueDetails?.id}</Label>
+
                 <div className="flex items-center space-x-2">
                   {/* <User className="h-5 w-5 text-muted-foreground" /> */}
-                  <span className="text-muted-foreground">{issue.issueDetails?.assignee?.fullname ? (
+                  <span className="text-indigo-600">{issue.issueDetails?.assignee?.fullname ? (
                     <div className="flex items-center gap-3">
-                      <Avatar className="border-2 border-white">
-                        <AvatarFallback>{issue.issueDetails.assignee.fullname.slice(-3)[0]}</AvatarFallback>
+                      <Avatar className="border-2 border-indigo-200">
+                        <AvatarFallback className="bg-indigo-100 text-indigo-800">{issue.issueDetails.assignee.fullname.slice(-3)[0]}</AvatarFallback>
                       </Avatar>
                       <p>{issue.issueDetails.assignee.fullname}</p>
                     </div>
@@ -357,36 +415,39 @@ const IssueDetails = () => {
               </div>
               <Textarea
                 placeholder="Thêm mô tả cho tác vụ này..."
-                className="min-h-[100px]"
+                className="min-h-[100px] border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400 textarea-black-text"
                 value={issue.issueDetails?.description}
+                disabled
+                style={{ color: 'black' }}
+                
               // onChange={handleDescriptionChange}
               />
             </div>
 
             <div className="space-y-4">
-              <Label className="text-xl">Tiến độ</Label>
+              <Label className="text-sm font-medium">Tiến độ</Label>
               <div className="space-y-2">
-                <Progress value={progress} className="h-3" />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{progress}% hoàn thành</span>
+                <Progress value={issue.issueDetails?.finish} className="h-3 bg-blue-100" indicatorColor="bg-blue-500" />
+                <div className="flex justify-between text-sm text-indigo-600">
+                  <span>{issue.issueDetails?.finish}% hoàn thành</span>
                   <span>Hết hạn: {new Date(issue.issueDetails?.dueDate).toLocaleDateString('vi-VN') || "N/A"}</span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <Label className="text-xl">Đánh giá hoàn thiện</Label>
+              <Label className="text-sm font-medium">Đánh giá hoàn thiện</Label>
               <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {([1, 2, 3, 4, 5]).map((star) => (
                   <button
                     key={star}
                     onClick={() => handleRating(star)}
                     className="focus:outline-none"
                   >
                     <Star
-                      className={`w-8 h-8 ${star <= rating
+                      className={`w-8 h-8 ${star <= (issue.issueDetails?.finish / 20)
                         ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
+                        : "text-indigo-200"
                         }`}
                     />
                   </button>
@@ -394,17 +455,32 @@ const IssueDetails = () => {
               </div>
             </div>
 
+
+            <div>
+              <Label className="text-sm font-medium">Lương nhiệm vụ</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="text"
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="Nhập lương"
+                  Value={formatPrice.format(issue.issueDetails?.price)}
+                  disabled
+                />
+                <span className="text-sm text-muted-foreground">VNĐ</span>
+              </div>
+            </div>
+
             <div className="space-y-4">
-              <Label className="text-xl">Tệp đính kèm</Label>
+              <Label className="text-sm font-medium">Tệp đính kèm</Label>
               <div className="flex items-center space-x-4">
                 <Input
                   type="file"
-                  className="flex-grow"
+                  className="flex-grow border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400"
                   multiple
                   onChange={handleFileChange}
 
                 />
-                <Button onClick={handleUpload} variant="outline">
+                <Button onClick={handleUpload} variant="outline" className="border-indigo-300 text-indigo-700 hover:bg-indigo-100">
                   <Upload className="mr-2 h-4 w-4" /> Tải lên
                 </Button>
               </div>
@@ -413,12 +489,12 @@ const IssueDetails = () => {
                   const fileName = decodeURIComponent(file.split('/').pop().split('?')[0]);
                   const fileNames = fileName.split('/').pop();
                   return (
-                    <div key={index} className="flex items-center space-x-2 p-2 bg-secondary rounded-md">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <a href={file} target="_blank" rel="noopener noreferrer">
-                      <span>{fileNames}</span>
+                    <div key={index} className="flex items-center space-x-2 p-2 bg-blue-50 rounded-md">
+                      <FileText className="h-5 w-5 text-blue-600" />
+                      <a href={file} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">
+                        <span>{fileNames}</span>
                       </a>
-                      
+
                       {/* <span className="text-sm text-muted-foreground">({file.size})</span> */}
                     </div>
 
@@ -430,14 +506,14 @@ const IssueDetails = () => {
 
           <div className="space-y-8">
             <div className="space-y-4">
-              <Label className="text-xl">Ngày hết hạn</Label>
+              <Label className="text-sm font-medium">Ngày hết hạn</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !issue.issueDetails?.dueDate && "text-muted-foreground"
+                      "w-full justify-start text-left font-normal border-indigo-200 text-indigo-700",
+                      !issue.issueDetails?.dueDate && "text-indigo-400"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -456,9 +532,9 @@ const IssueDetails = () => {
             </div>
 
             <div className="space-y-4">
-              <Label className="text-xl">Trạng thái</Label>
+              <Label className="text-sm font-medium">Trạng thái</Label>
               <Select value={issue.issueDetails?.status} onValueChange={handleUpdateIssueStatus}>
-                <SelectTrigger>
+                <SelectTrigger className="border-indigo-200">
                   <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
@@ -470,9 +546,9 @@ const IssueDetails = () => {
             </div>
 
             <div className="space-y-4">
-              <Label className="text-xl">Độ ưu tiên</Label>
+              <Label className="text-sm font-medium">Độ ưu tiên</Label>
               <Select value={issue.issueDetails?.priority} onValueChange={handleUpdateIssueStatus}>
-                <SelectTrigger>
+                <SelectTrigger className="border-indigo-200">
                   <SelectValue placeholder="Chọn độ ưu tiên" />
                 </SelectTrigger>
                 <SelectContent>
@@ -485,14 +561,14 @@ const IssueDetails = () => {
 
 
             <div className="space-y-4">
-              <Label className="text-xl">Hoạt động gần đây</Label>
+              <Label className="text-sm font-medium">Hoạt động gần đây</Label>
               <div className="space-y-2">
                 {activities.map((activity) => (
                   <div key={activity.id} className="text-sm">
-                    <p className="text-muted-foreground">
+                    <p className="text-indigo-600">
                       {activity.text}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-indigo-400">
                       {format(activity.timestamp, 'dd/MM/yyyy HH:mm')}
                     </p>
                   </div>
@@ -502,167 +578,38 @@ const IssueDetails = () => {
           </div>
 
           <div className="space-y-4 md:col-span-3">
-            <Label className="text-xl">Bình luận</Label>
-            <CardContent>
-              <ScrollArea className="h-[100px] pr-4">
-                <div className="space-y-4">
-                  {comment.comments.map((item) => (
-                    <CommentCard item={item} key={item} />
-                  ))}
-                </div>
-              </ScrollArea>
-              <form onSubmit={onSubmit} className="mt-4">
-                <TextArea
-                  placeholder="Nhập đánh giá ..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="w-full mb-2"
-                />
-                <Button type="submit">
-                  <SendIcon className="h-4 w-4 mr-2" />
-                  Đăng bình luận
-                </Button>
-              </form>
-            </CardContent>
+            <Label className="text-sm font-medium">Bình luận</Label>
+            <Card className="border-indigo-200">
+              <CardContent >
+                <ScrollArea className="h-[200px] pr-4">
+                  <div className="space-y-4 mt-4">
+                    {comment.comments.map((item) => (
+                      <CommentCard item={item} key={item} className="bg-white p-3 rounded-lg shadow-sm" />
+
+                    ))}
+                  </div>
+                </ScrollArea>
+                <form onSubmit={onSubmit} className="mt-4">
+                  <TextArea
+                    placeholder="Nhập đánh giá ..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="w-full mb-2 border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400"
+                  />
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <SendIcon className="h-4 w-4 mr-2" />
+                    Đăng bình luận
+                  </Button>
+                </form>
+              </CardContent>
+
+            </Card>
+
           </div>
 
         </div>
       </div>
     </div>
-
-    // <div className="flex h-screen bg-gray-100">
-    //   <div className="flex-1 flex flex-col overflow-hidden">
-    //     <header className="flex justify-between items-center p-4 bg-white border-b">
-    //       <div className="flex items-center">
-    //         <h1 className="text-2xl font-bold">{issue.issueDetails?.title || "Default Title"}</h1>
-    //       </div>
-    //       <Select onValueChange={handleUpdateIssueStatus} defaultValue={issue.issueDetails?.status || "pending"}>
-    //         <SelectTrigger className="w-[180px]">
-    //           <SelectValue placeholder={issue.issueDetails?.status || "Select Status"} />
-    //         </SelectTrigger>
-    //         <SelectContent>
-    //           <SelectItem value="pending">Chưa làm</SelectItem>
-    //           <SelectItem value="in_progress">Đang hoàn thàh</SelectItem>
-    //           <SelectItem value="done">Đã hoàn thành</SelectItem>
-    //         </SelectContent>
-    //       </Select>
-    //     </header>
-
-    //     <main className="flex-1 overflow-x-hidden overflow-y-auto">
-    //       <div className="container mx-auto px-4 py-8">
-    //         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
-    //           <Card className="md:col-span-2 h-full">
-    //             <CardHeader>
-    //               <CardTitle>Chi tiết tác vụ</CardTitle>
-    //               <CardDescription>Task ID: TV - {issue.issueDetails?.id || "N/A"}</CardDescription>
-    //             </CardHeader>
-    //             <CardContent className="space-y-4">
-    //               <div>
-    //                 <h3 className="text-sm font-medium text-gray-500 mb-2">Mô tả</h3>
-    //                 <p className="text-sm text-gray-700">{issue.issueDetails?.description || "No description available."}</p>
-    //               </div>
-    //               <div>
-    //                 <h3 className="text-sm font-medium text-gray-500 mb-2">Tiến độ</h3>
-    //                 <Progress value={issue.issueDetails?.progress || 0} className="w-full" />
-    //                 <p className="text-sm text-gray-600 mt-1">{issue.issueDetails?.progress || 0}% hoàn thành</p>
-    //               </div>
-    //               <div className="flex items-center space-x-4">
-    //                 <CalendarIcon className="h-5 w-5 text-gray-400" />
-    //                 <span className="text-sm text-gray-600">Hết hạn {new Date(issue.issueDetails?.dueDate).toLocaleDateString('vi-VN') || "N/A"}</span>
-    //               </div>
-    //               <div>
-    //                 <h3 className="text-sm font-medium text-gray-500 mb-2">Phân công</h3>
-    //                 <div className="flex -space-x-2 overflow-hidden">
-    // {issue.issueDetails?.assignee?.fullname ? (
-    //   <div className="flex items-center gap-3">
-    //     <Avatar className="border-2 border-white">
-    //       <AvatarFallback>{issue.issueDetails.assignee.fullname.slice(-3)[0]}</AvatarFallback>
-    //     </Avatar>
-    //     <p>{issue.issueDetails.assignee.fullname}</p>
-    //   </div>
-    // ) : (
-    //   <p>Chưa phân công</p>
-    // )}
-    //                 </div>
-    //               </div>
-    //               <div>
-    //                 <h3 className="text-sm font-medium text-gray-500 mb-2">Độ ưu tiên</h3>
-    //                 <div className="flex flex-wrap gap-2">
-    //                   <Badge variant="secondary">
-    //                     <TagIcon className="h-3 w-3 mr-1" />
-    //                     <p>{issue.issueDetails?.priority || "Normal"}</p>
-    //                   </Badge>
-    //                 </div>
-    //               </div>
-    //             </CardContent>
-    //           </Card>
-
-    //           <Card className="h-full">
-    //             <CardHeader>
-    //               <CardTitle>Tải tệp lên</CardTitle>
-    //             </CardHeader>
-    //             <CardContent className="space-y-4">
-    //               <div>
-    //                 <h3 className="text-sm font-medium text-gray-500 mb-2">Tệp</h3>
-    //                 <div className="flex items-center gap-2">
-    //                   <Input
-    //                     type="file"
-    //                     onChange={handleFileSelect}
-    //                     ref={fileInputRef}
-    //                     className="flex-grow"
-    //                   />
-    //                   <Button onClick={handleFileUpload} disabled={!selectedFile}>
-    //                     <UploadIcon className="h-4 w-4 mr-2" />
-    //                     Tải lên
-    //                   </Button>
-    //                 </div>
-    //               </div>
-    //               <div>
-    //                 <h3 className="text-sm font-medium text-gray-500 mb-2">Đường dẫn</h3>
-    //                 <form onSubmit={handleLinkSubmit} className="flex gap-2">
-    //                   <Input type="url" name="link" placeholder="https://example.com" required className="flex-grow" />
-    //                   <Button type="submit">
-    //                     <LinkIcon className="h-4 w-4 mr-2" />
-    //                     Thêm
-    //                   </Button>
-    //                 </form>
-    //               </div>
-    //             </CardContent>
-    //           </Card>
-
-    //           <Card className="md:col-span-3">
-    // <CardHeader>
-    //   <CardTitle>Đánh giá</CardTitle>
-    // </CardHeader>
-    // <CardContent>
-    //   <ScrollArea className="h-[300px] pr-4">
-    //     <div className="space-y-4">
-    //       {comment.comments.map((item) => (
-    //         <CommentCard item={item} key={item} />
-    //       ))}
-    //     </div>
-    //   </ScrollArea>
-    //   <form onSubmit={onSubmit} className="mt-4">
-    //     <TextArea
-    //       placeholder="Nhập đánh giá ..."
-    //       value={newComment}
-    //       onChange={(e) => setNewComment(e.target.value)}
-    //       className="w-full mb-2"
-    //     />
-    //     <Button type="submit">
-    //       <SendIcon className="h-4 w-4 mr-2" />
-    //       Đăng bình luận
-    //     </Button>
-    //   </form>
-    // </CardContent>
-    //           </Card>
-
-
-    //         </div>
-    //       </div>
-    //     </main>
-    //   </div>
-    // </div>
 
 
   )

@@ -67,6 +67,28 @@
   }
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Đảm bảo không có cuộn toàn trang */
+}
+
+main {
+  flex: 1;
+  padding: 1rem 1.5rem; /* tương đương với p-4 và lg:p-6 */
+  overflow-y: auto; /* Bật cuộn dọc khi cần thiết */
+  height: 100vh; /* Đặt chiều cao của main bằng chiều cao của màn hình */
+  margin-bottom: 20px
+}
+
+.textarea-black-text {
+  color: black;
+}
+
+
+
+
+
 
 
 

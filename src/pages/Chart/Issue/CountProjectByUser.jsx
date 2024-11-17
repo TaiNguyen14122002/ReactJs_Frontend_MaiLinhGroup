@@ -9,150 +9,73 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Badge } from '@/components/ui/badge';
 import { CalendarIcon, TagIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { format } from 'date-fns';
 
 Chart.register(...registerables); // Đăng ký các thành phần cần thiết
 
 
 const CountProjectByUser = () => {
-    // const [chartData, setChartData] = useState(null);
-    // const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    // const [errorMessage, setErrorMessage] = useState('');
-    // const token = localStorage.getItem('jwt');
 
-    // const fetchProjectCountByMonth = async (year) => {
-    //     if (!token) {
-    //         setErrorMessage("Vui lòng đăng nhập.");
-    //         return;
-    //     }
+    const [mockProjects, setMockProjects] = useState([]);
+    const [mockIssues, setMockIssues] = useState([]);
 
-    //     try {
-    //         const response = await axios.get(`http://localhost:1000/api/projects/countProjects`, {
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`,
-    //             },
-    //             params: { year: year },
-    //         });
+    const token = localStorage.getItem('jwt');
 
-    //         const data = response.data;
+    const fetchProjectOwned = async () => {
+        if (!token) {
+            console.log("Bạn chưa đăng nhập")
+        }
+        else {
+            try {
+                const response = await axios.get(`http://localhost:1000/api/projects/owner`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                console.log("Dữ liệu mockProjects", response.data)
+                setMockProjects(response.data);
 
-    //         console.log('Dữ liệu từ API:', data);
 
-    //         const months = [
-    //             'January', 'February', 'March', 'April', 'May', 'June',
-    //             'July', 'August', 'September', 'October', 'November', 'December'
-    //         ];
+            } catch (error) {
+                console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error);
+            }
+        }
+    }
 
-    //         const ownedProjects = months.map(month => data[month.toLowerCase()]?.owned || 0);
-    //         const participatedProjects = months.map(month => data[month.toLowerCase()]?.participated || 0);
+    const [selectedProjectId, setSelectedProjectId] = useState('');
 
-    //         console.log('Số lượng dự án làm chủ:', ownedProjects);
-    //         console.log('Số lượng dự án tham gia:', participatedProjects);
-
-    //         setChartData({
-    //             labels: months,
-    //             datasets: [
-    //                 {
-    //                     label: 'Dự án làm chủ',
-    //                     data: ownedProjects,
-    //                     backgroundColor: '#3498db',
-    //                     borderColor: '#2980b9',
-    //                     borderWidth: 1,
-    //                 },
-    //                 {
-    //                     label: 'Dự án tham gia',
-    //                     data: participatedProjects,
-    //                     backgroundColor: '#e74c3c',
-    //                     borderColor: '#c0392b',
-    //                     borderWidth: 1,
-    //                 },
-    //             ],
-    //         });
-    //     } catch (error) {
-    //         console.error(error);
-    //         setErrorMessage("Đã xảy ra lỗi khi tải dữ liệu.");
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     fetchProjectCountByMonth(selectedYear);
-    // }, [selectedYear]);
-
-    const mockProjects = [
-        { id: 1, name: "Website Redesign" },
-        { id: 2, name: "Mobile App Development" },
-        { id: 3, name: "Database Migration" }
-      ]
-
-    const mockIssues = [
-        {
-            id: 1,
-            title: "Implement user authentication",
-            description: "Set up JWT-based authentication for the application",
-            status: "In Progress",
-            priority: "High",
-            startDate: "2023-06-01",
-            dueDate: "2023-06-15",
-            tags: ["backend", "security"],
-            assignee: { name: "Nguyễn Văn Tài" },
-            completionPercentage: 75,
-            commission: 1000000,
-            projectId: 1
-        },
-        {
-            id: 2,
-            title: "Design landing page",
-            description: "Create a responsive design for the landing page",
-            status: "To Do",
-            priority: "Medium",
-            startDate: "2023-06-05",
-            dueDate: "2023-06-20",
-            tags: ["frontend", "design"],
-            assignee: { name: "Nguyễn Văn Tài" },
-            completionPercentage: 0,
-            commission: 800000,
-            projectId: 1
-        },
-        {
-            id: 3,
-            title: "Fix payment gateway bug",
-            description: "Resolve issues with payment processing",
-            status: "Done",
-            priority: "Critical",
-            startDate: "2023-05-28",
-            dueDate: "2023-06-02",
-            tags: ["backend", "bugfix"],
-            assignee: { name: "Nguyễn Văn Tài" },
-            completionPercentage: 100,
-            commission: 1500000,
-            projectId: 2
-        },
-        {
-            id: 4,
-            title: "Optimize database queries",
-            description: "Improve performance of slow database queries",
-            status: "In Progress",
-            priority: "High",
-            startDate: "2023-06-10",
-            dueDate: "2023-06-25",
-            tags: ["backend", "performance"],
-            assignee: { name: "Nguyễn Văn Tài" },
-            completionPercentage: 50,
-            commission: 1200000,
-            projectId: 3
-          }
-    ]
+    const fetchAllByProject = async () => {
+        if (!token) {
+            console.log("Bạn chưa đăng nhập")
+        }
+        else {
+            try {
+                const response = await axios.get(`http://localhost:1000/api/issues/projects/${selectedProjectId}/issues`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                console.log("Dữ liệu mockIssues", response.data)
+                setMockIssues(response.data)
+            } catch (error) {
+                console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error);
+            }
+        }
+    }
 
     const [issues, setIssues] = useState(mockIssues)
     const [statusFilter, setStatusFilter] = useState("all")
 
     useEffect(() => {
         // In a real application, you would fetch data from an API here
+        fetchProjectOwned();
+        fetchAllByProject();
         setIssues(mockIssues)
-    }, [])
+    }, [selectedProjectId])
 
     const filteredIssues = statusFilter === "all"
         ? issues
-        : issues.filter(issue => issue.status.toLowerCase() === statusFilter)
+        : issues.filter(issue => issue.status?.toLowerCase() === statusFilter)
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
@@ -166,39 +89,7 @@ const CountProjectByUser = () => {
 
 
     return (
-        // <div>
-        //     <h2>Projects Created and Participated Per Month</h2>
-        //     {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
 
-        //     <label htmlFor="yearSelect">Chọn năm: </label>
-        //     <select
-        //         id="yearSelect"
-        //         value={selectedYear}
-        //         onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-        //     >
-        //         {Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i).map(year => (
-        //             <option key={year} value={year}>
-        //                 {year}
-        //             </option>
-        //         ))}
-        //     </select>
-
-        //     {chartData ? (
-        //         <Bar
-        //             data={chartData}
-        //             options={{
-        //                 responsive: true,
-        //                 scales: {
-        //                     y: {
-        //                         beginAtZero: true,
-        //                     },
-        //                 },
-        //             }}
-        //         />
-        //     ) : (
-        //         !errorMessage && <p>Đang tải dữ liệu...</p>
-        //     )}
-        // </div>
         <div>
             <Card className="w-full mb-8">
                 <CardHeader>
@@ -208,7 +99,10 @@ const CountProjectByUser = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
+
                                 <TableHead>Dự án</TableHead>
+                                <TableHead>Mức đề xuất</TableHead>
+                                <TableHead>Mức thu về</TableHead>
                                 <TableHead>Chưa làm</TableHead>
                                 <TableHead>Đang làm</TableHead>
                                 <TableHead>Đã làm</TableHead>
@@ -217,15 +111,17 @@ const CountProjectByUser = () => {
                         </TableHeader>
                         <TableBody>
                             {mockProjects.map((project) => {
-                                const projectIssues = issues.filter(issue => issue.projectId === project.id)
-                                const todoCount = projectIssues.filter(issue => issue.status === "To Do").length
-                                const inProgressCount = projectIssues.filter(issue => issue.status === "In Progress").length
-                                const doneCount = projectIssues.filter(issue => issue.status === "Done").length
+                                const projectIssues = mockIssues.filter(issue => issue.projectId === project.id)
+                                const todoCount = projectIssues.filter(issue => issue.status === "pending").length
+                                const inProgressCount = projectIssues.filter(issue => issue.status === "In_Progress").length
+                                const doneCount = projectIssues.filter(issue => issue.status === "done").length
                                 const totalCount = projectIssues.length
 
                                 return (
                                     <TableRow key={project.id}>
                                         <TableCell className="font-medium">{project.name}</TableCell>
+                                        <TableCell></TableCell>
+                                        <TableCell></TableCell>
                                         <TableCell>{todoCount}</TableCell>
                                         <TableCell>{inProgressCount}</TableCell>
                                         <TableCell>{doneCount}</TableCell>
@@ -242,18 +138,18 @@ const CountProjectByUser = () => {
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold">Danh sách tác vụ</CardTitle>
                     <div className="flex justify-between items-center">
-                        <div className="text-lg font-semibold">
+                        {/* <div className="text-lg font-semibold">
                             Tổng hoa hồng: {formatCurrency(totalCommission)}
-                        </div>
-                        <Select onValueChange={setStatusFilter} defaultValue="all">
+                        </div> */}
+                        <Select onValueChange={setSelectedProjectId}>
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Lọc theo trạng thái" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">Tất cả</SelectItem>
-                                <SelectItem value="to do">To Do</SelectItem>
-                                <SelectItem value="in progress">In Progress</SelectItem>
-                                <SelectItem value="done">Done</SelectItem>
+                                {mockProjects?.map((item) => (
+                                    <SelectItem value={item.id.toString()} key={item.id}>{item.name}</SelectItem>
+                                ))}
+
                             </SelectContent>
                         </Select>
                     </div>
@@ -265,61 +161,70 @@ const CountProjectByUser = () => {
                             <TableRow>
                                 <TableHead className="w-[50px]">ID</TableHead>
                                 <TableHead>Tiêu đề</TableHead>
-                                <TableHead>Trạng thái</TableHead>
-                                <TableHead>Ưu tiên</TableHead>
+                                <TableHead>Mức độ hoàn thành</TableHead>
+                                <TableHead>Độ ưu tiên</TableHead>
                                 <TableHead>Ngày bắt đầu</TableHead>
                                 <TableHead>Ngày kết thúc</TableHead>
                                 <TableHead>Người được giao</TableHead>
-                                <TableHead>Mức độ hoàn thành</TableHead>
-                                <TableHead>Hoa hồng</TableHead>
-                                <TableHead>Tags</TableHead>
+                                {/* <TableHead>Mức độ hoàn thành</TableHead> */}
+
+                                <TableHead>Thực hưởng</TableHead>
+                                <TableHead>Thanh toán</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredIssues.map((issue) => (
+                            {mockIssues?.map((issue) => (
                                 <TableRow key={issue.id}>
                                     <TableCell className="font-medium">{issue.id}</TableCell>
                                     <TableCell>{issue.title}</TableCell>
                                     <TableCell>
                                         <Badge variant={
                                             issue.status === "Done" ? "default" :
-                                                issue.status === "In Progress" ? "secondary" : "outline"
+                                                issue.status === "pending" ? "secondary" : "outline"
                                         }>
-                                            {issue.status}
+                                            {issue.finish === null ? '0%' : `${issue.finish}%`}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant={
-                                            issue.priority === "Critical" ? "destructive" :
-                                                issue.priority === "High" ? "default" :
-                                                    issue.priority === "Medium" ? "secondary" : "outline"
+                                            issue.priority === "High" ? "default" : // 'High' -> "default"
+                                                issue.priority === "Medium" ? "secondary" : // 'Medium' -> "secondary"
+                                                    issue.priority === "Low" ? "success" : "outline" // 'Low' -> "outline"
                                         }>
-                                            {issue.priority}
+                                            {issue.priority === "High" ? "Cao" :
+                                                issue.priority === "Medium" ? "Bình thường" :
+                                                    issue.priority === "Low" ? "Thấp" : ""}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         <CalendarIcon className="inline mr-2 h-4 w-4" />
-                                        {issue.startDate}
+                                        {format(new Date(issue.startDate), 'dd/MM/yyyy')}
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         <CalendarIcon className="inline mr-2 h-4 w-4" />
-                                        {issue.dueDate}
+                                        {format(new Date(issue.dueDate), 'dd/MM/yyyy')}
                                     </TableCell>
-                                    <TableCell>{issue.assignee.name}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2">
-                                            <Progress value={issue.completionPercentage} className="w-[60px]" />
-                                            <span>{issue.completionPercentage}%</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{formatCurrency(calculateCommission(issue))}</TableCell>
-                                    <TableCell>
+                                    <TableCell>{issue.assignes?.fullname}</TableCell>
+                                    {/* <TableCell>
                                         {issue.tags.map(tag => (
                                             <Badge key={tag} variant="outline" className="mr-1">
                                                 <TagIcon className="inline mr-1 h-3 w-3" />
                                                 {tag}
                                             </Badge>
                                         ))}
+                                    </TableCell> */}
+                                    <TableCell>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(issue.userIssueSalaries[0]?.salary)}</TableCell>
+                                    <TableCell>
+                                        <span
+                                            style={{
+                                                backgroundColor: issue.userIssueSalaries[0]?.paid ? 'green' : 'red',
+                                                color: 'white',  // Màu chữ trắng để dễ đọc trên nền đỏ hoặc xanh
+                                                padding: '5px 10px', // Padding để tạo khoảng cách giữa chữ và viền
+                                                borderRadius: '5px', // Bo góc cho đẹp
+                                            }}
+                                        >
+                                            {issue.userIssueSalaries[0]?.paid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                                        </span>
                                     </TableCell>
                                 </TableRow>
                             ))}

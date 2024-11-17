@@ -76,7 +76,7 @@ const ProjectList = () => {
 
     useEffect(() => {
         fetchProjectPinned();
-      },[])
+      },[token])
 
     console.log("project store", project)
     return (

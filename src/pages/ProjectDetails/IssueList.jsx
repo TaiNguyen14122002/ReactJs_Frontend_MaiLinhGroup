@@ -25,6 +25,11 @@ const IssueList = ({ title, status }) => {
         navigate(`/project/${projectId}/issue/${itemId}`); // Chuyển hướng đến trang chi tiết của nhiệm vụ
     };
 
+    const formatPrice = new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+      });
+
     return (
         <div className='w-full'>
             <Dialog>
@@ -42,7 +47,7 @@ const IssueList = ({ title, status }) => {
                                     <TableCell className="border px-4 py-2 text-left">Mô tả</TableCell>
                                     <TableCell className="border px-4 py-2 text-left">Ngày hết hạn</TableCell>
                                     <TableCell className="border px-4 py-2 text-left">Ưu tiên</TableCell>
-                                    {/* <TableCell className="border px-4 py-2 text-left">Tiến độ</TableCell> */}
+                                    <TableCell className="border px-4 py-2 text-left">Lương</TableCell>
                                     <TableCell className="border px-4 py-2 text-left">Nhiệm vụ</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -63,7 +68,7 @@ const IssueList = ({ title, status }) => {
                                                 {new Date(item.dueDate).toLocaleDateString('vi-VN')}
                                             </TableCell>
                                             <TableCell className="border px-4 py-2">{item.priority}</TableCell>
-                                            {/* <TableCell className="border px-4 py-2">{item.status}</TableCell> */}
+                                            <TableCell className="border px-4 py-2">{formatPrice.format(item.price)}</TableCell>
                                             <TableCell className="border px-4 py-2">
                                                 <IssueCard projectId={id} item={item} />
                                             </TableCell>

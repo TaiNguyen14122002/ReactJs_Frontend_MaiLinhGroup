@@ -158,7 +158,7 @@ const handleYearChange = (year) => {
 }
 
 return (
-    <div className="p-4 max-w-[1200px] mx-auto">
+    <div className="p-4 max-w-[1200px] mx-auto pb-4">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" onClick={() => navigateMonth('prev')}>
@@ -285,7 +285,7 @@ return (
             </div>
         </div>
 
-        {/* <Dialog open={isAddingTask} onOpenChange={setIsAddingTask}>
+        <Dialog open={isAddingTask} onOpenChange={setIsAddingTask}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Thêm nhiệm vụ mới</DialogTitle>
@@ -331,7 +331,7 @@ return (
                     <Button onClick={addTask}>Thêm nhiệm vụ</Button>
                 </DialogFooter>
             </DialogContent>
-        </Dialog> */}
+        </Dialog>
     </div>
 )
 }

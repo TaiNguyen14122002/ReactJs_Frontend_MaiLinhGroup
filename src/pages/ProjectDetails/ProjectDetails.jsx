@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { DownloadIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import React, { useEffect, useState } from 'react'
@@ -19,8 +19,8 @@ import { storage } from '../../../Firebase/FirebaseConfig'; // Import cấu hìn
 import GetIssuesCountByStatus from '../Chart/Issue/GetIssuesCountByStatus'
 
 import { GiPin } from "react-icons/gi";
-import { ArrowUpDown, CheckCircle2, Download, Edit, FileIcon, FileText, FileTextIcon, ImageIcon, Mail, MoreVertical, Pin, Star, Upload, X, XCircle } from 'lucide-react'
-import { Progress } from 'antd'
+import { ArrowUpDown, CheckCircle2, Download, Edit, FileIcon, FileText, FileTextIcon, ImageIcon, Mail, MoreVertical, Pencil, Phone, Pin, Plus, RefreshCw, Star, Trash2, Upload, X, XCircle } from 'lucide-react'
+
 
 import { format } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'
@@ -32,6 +32,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import Calender from '../Calender/Calender'
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Progress } from '@/components/ui/progress'
 
 
 
@@ -309,16 +312,12 @@ const ProjectDetails = () => {
     }
   }
 
-  useEffect(() => {
-    fetchUser();
-    fetchProject();
-    return;
-  }, [])
 
-  const ExportToExcel = async() => {
 
-    if(inforUser.id === inforProject.owner?.id){
-      try{
+  const ExportToExcel = async () => {
+
+    if (inforUser.id === inforProject.owner?.id) {
+      try {
 
         const response = await axios.get(`http://localhost:1000/api/projects/projects/${id}/issues/export`, {
           headers: {
@@ -341,10 +340,10 @@ const ProjectDetails = () => {
           </div>
         )
 
-      }catch(error){
+      } catch (error) {
         console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error)
       }
-    }else{
+    } else {
       toast.error(
         <div>
           <strong>Lỗi Tải xuống</strong>
@@ -353,6 +352,186 @@ const ProjectDetails = () => {
       )
     }
   }
+  useEffect(() => {
+    fetchUser();
+    fetchProject();
+    return;
+  }, [])
+
+  const displayedMembers = project.projectDetails?.team.slice(0, 5)
+  const additionalMembers = Math.max(0, project.projectDetails?.length - 5)
+
+  const [member, setMember] = useState([]);
+
+  const handleEditWorkType = (memberId, newWorkType) => {
+    setMember(member.map(member =>
+      member.userId === memberId ? { ...member, workType: newWorkType } : member
+    ))
+    setEditingMember(null)
+  }
+
+
+
+  const fetchMember = async () => {
+    if (!token) {
+      console.log("Phiên đăng nhập đã hết hạn")
+    } else {
+      console.log("id", id)
+      try {
+        const response = await axios.get(`http://localhost:1000/api/users/project/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        console.log("Thành viên", response.data);
+        setMember(response.data);
+
+      } catch (error) {
+        console.log("Có lỗi xẩy ra trong quá trình tải dữ liệu", error)
+      }
+    }
+  }
+
+  const addWorkTypeMenbers = async (memberId, newWorkType) => {
+    if (inforUser.id === inforProject.owner?.id) {
+      try {
+
+        const requestData = {
+          userId: memberId,
+          projectId: 1003,
+          workingType: newWorkType
+        };
+
+        console.log("Dữ liệu truyền vào", requestData)
+
+        const response = await axios.post(`http://localhost:1000/api/worktype/addWorkType`, null, {
+          params: requestData,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+
+        });
+        console.log("Thêm hình thức làm việc cho người dùng thành công")
+
+      } catch (error) {
+        console.log("Có lỗi xảy ra trong quá trình tải dữ liệu");
+      }
+    } else {
+      toast.warning(
+        <div>
+          <strong>Lỗi </strong>
+          <p>Chỉ có người tạo tự án mới có thể chỉnh sửa</p>
+        </div>
+      )
+    }
+  }
+
+  const updateWorkTypeMenbers = async (memberId, newWorkType) => {
+    if (inforUser.id === inforProject.owner?.id) {
+      try {
+        const requestData = {
+          userId: memberId,
+          projectId: id,
+          workingType: newWorkType
+        };
+
+        console.log("Dữ liệu truyền vào", requestData)
+        const response = await axios.put(`http://localhost:1000/api/worktype/update`, null, {
+          params: requestData,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        console.log("Cập nhập hình thức làm việc cho người dùng thành công")
+
+      } catch (error) {
+        console.log("Có lỗi xảy ra trong quá trình tải dữ liệu");
+      }
+    } else {
+      toast.warning(
+        <div>
+          <strong>Lỗi </strong>
+          <p>Chỉ có người tạo tự án mới có thể chỉnh sửa</p>
+        </div>
+      )
+    }
+  }
+
+  const [tasks, setTasks] = useState([]);
+
+  const fetchTask = async () => {
+    try {
+      const data = {
+        projectId: id
+      }
+      const response = await axios.get(`http://localhost:1000/api/issues/project/${id}`, {
+
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Nhiệm vụ", response.data);
+      setTasks(response.data)
+
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu")
+    }
+  }
+
+  const calculateProgress = (memberId) => {
+    const memberTasks = tasks.filter(task => task.assignee?.id === memberId)
+    const completedTasks = memberTasks.filter(task => task.status === 'done').length
+    const totalTasks = memberTasks.length
+    return {
+      percentage: totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0,
+      fraction: `${completedTasks}/${totalTasks}`
+    }
+  }
+
+  useEffect(() => {
+    fetchTask();
+    fetchMember();
+  }, [])
+
+  // Hàm thay đổi trạng thái
+
+  const [updateproject, setUpdateProject] = useState([]);
+
+  const updateProject = async () => {
+    try {
+
+      const response = await axios.put(`localhost:1000/api/projects/${id}`,)
+    } catch (error) {
+      console.log("Có lỗi xẩy ra trong quá trình thực hiển dữ liệu", error)
+    }
+  }
+
+  const onStatusChange = async (value) => {
+
+    if (value === 'done' || value === "inprocess") {
+      try {
+        const requestData = {
+          status: value,
+        }
+
+        const response = await axios.put(`http://localhost:1000/api/projects/${id}/status`, null, {
+          params: requestData,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      } catch (error) {
+        console.log("Có lỗi xẩy ra trong quá trình thực hiển dữ liệu", error)
+      }
+      // setUpdateProject(updatedProject);
+
+      console.log("Trạng thái mới:", value);
+      dispatch(fetchProjectById(id))
+
+    } else {
+      console.error("Không tìm thấy project với ID:", value);
+    }
+  };
 
 
   return (
@@ -367,6 +546,7 @@ const ProjectDetails = () => {
               textColor='secondary'
               indicatorColor='secondary'>
               <Tab label="Thông tin" value="details" />
+              <Tab label="Thành viên" value="members" />
               <Tab label="Thống kê" value="statistics" />
               <Tab label="Tệp đã tải lên" value="uploadFile" />
               <Tab label="lịch biểu" value="Calender" />
@@ -510,16 +690,16 @@ const ProjectDetails = () => {
                                 <MoreVertical className="h-5 w-5" />
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => onStatusChange(project.id)}>
-                                  {projectstatus ? (
+                                <DropdownMenuItem onClick={() => onStatusChange(project.projectDetails?.status === 'done' ? 'inprocess' : 'done')}>
+                                  {project.projectDetails?.status === 'inprocess' ? (
                                     <div className="flex items-center">
                                       <XCircle className="mr-2 h-4 w-4" />
-                                      <span>Đánh dấu chưa hoàn thành</span>
+                                      <span> Đánh dấu hoàn thành</span>
                                     </div>
                                   ) : (
                                     <div className="flex items-center">
                                       <CheckCircle2 className="mr-2 h-4 w-4" />
-                                      <span>Đánh dấu hoàn thành</span>
+                                      <span>Đánh dấu chưa hoàn thành</span>
                                     </div>
                                   )}
                                 </DropdownMenuItem>
@@ -528,8 +708,13 @@ const ProjectDetails = () => {
                           </div>
 
                           <div className="mt-2">
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                              Đang phát triển
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${project.projectDetails?.status === 'done'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                                }`}
+                            >
+                              {project.projectDetails?.status === 'done' ? 'Hoàn thành' : 'Chưa hoàn thành'}
                             </span>
                           </div>
                         </div>
@@ -554,7 +739,22 @@ const ProjectDetails = () => {
                         </div>
 
                         <div className="rounded-lg border p-4">
-                          <h2 className="text-sm font-medium">Thời gian</h2>
+                          <div className="flex items-center gap-2 justify-between">
+                            <h2 className="text-sm font-medium">Thời gian</h2>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <MoreVertical className="h-5 w-5" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => console.log("Gia hạn")}>
+                                  <div className="flex items-center">
+                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                    <span>Gia hạn</span>
+                                  </div>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                           <div className="mt-2 space-y-1 text-sm">
                             <p>Bắt đầu: {project.projectDetails?.createdDate ? format(new Date(project.projectDetails.createdDate), 'dd/MM/yyyy') : 'Chưa xác định'}</p>
                             <p>Kết thúc dự kiến: 15/12/2023</p>
@@ -609,73 +809,64 @@ const ProjectDetails = () => {
                       </div>
 
                       <div className=" grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {project.projectDetails && project.projectDetails?.team && project.projectDetails?.team.map((item, index) => (
-                          <div key={index} className=" border rounded-t-lg shadow-lg overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 text-white" >
-                              <div className=" flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
-                                  <Avatar className="h-16 w-16 border-2 border-white">
-                                    <AvatarImage src="/placeholder-avatar.jpg" alt="Nguyễn Văn Tài" />
-                                    <AvatarFallback className="bg-white text-blue-500 text-xl font-semibold">{item.fullname.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                  </Avatar>
+                        {displayedMembers?.map((item, index) => {
 
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <h3 className="text-xl font-semibold">{item.fullname}</h3>
-                                    <TooltipProvider>
-                                      <div className="flex">
-                                        {[...Array(maxRating)].map((_, index) => (
-                                          <Tooltip key={index}>
-                                            <TooltipTrigger asChild>
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="p-0 h-auto hover:bg-transparent"
-                                                onClick={() => setRating(index + 1)}
-                                              >
-                                                <Star
-                                                  className={`h-5 w-5 ${index < rating ? "fill-yellow-400 text-yellow-400" : "text-white"
-                                                    }`}
-                                                />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                              <p>{index + 1} sao</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        ))}
-                                      </div>
-                                    </TooltipProvider>
-                                    {/* <p className="text-sm text-muted-foreground">{item.fullname}</p> */}
+                          const progress = calculateProgress(item.id)
+
+                          return (
+                            <div key={index} className=" border rounded-t-lg shadow-lg overflow-hidden">
+                              <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 text-white" >
+                                <div className=" flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
+                                    <Avatar className="h-16 w-16 border-2 border-white">
+                                      <AvatarImage src="/placeholder-avatar.jpg" alt="Nguyễn Văn Tài" />
+                                      <AvatarFallback className="bg-white text-blue-500 text-xl font-semibold">{item.fullname.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                    </Avatar>
+
                                   </div>
-                                  <p className="text-sm text-blue-100">Nhà phát triển</p>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <h3 className="text-xl font-semibold">{item.fullname}</h3>
+                                    </div>
+                                    <p className="text-sm text-blue-100">Nhà phát triển</p>
+
+                                  </div>
+
 
                                 </div>
+                              </div>
 
 
+                              <div className="p-4 space-y-2">
+                                <div className="text-sm text-muted-foreground">Tiến độ công việc</div>
+                                <Progress value={progress.percentage} className="h-2" />
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">
+                                    {progress.fraction} tác vụ
+                                  </span>
+                                  <span className="font-medium">
+                                    {progress.percentage.toFixed(0)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-4 flex items-center gap-2 text-sm text-muted-foreground">
+                                <Mail className="h-4 w-4" />
+                                {item.email}
                               </div>
                             </div>
+                          )
 
-
-                            <div className="p-4 space-y-2">
-                              <div className="text-sm text-muted-foreground">Tiến độ công việc</div>
-                              <Progress value={(20 / 10) * 100} />
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">
-                                  {item.fullname}/{item.fullname} tác vụ
-                                </span>
-                                <span className="font-medium">
-                                  {Math.round((2 / 10) * 100)}%
-                                </span>
+                        })}
+                        {additionalMembers > 0 && (
+                          <Card>
+                            <CardContent className="flex items-center justify-center p-4">
+                              <div className="text-center">
+                                <span className="text-2xl font-bold">+{additionalMembers}</span>
+                                <p className="text-sm text-muted-foreground">thành viên khác</p>
                               </div>
-                            </div>
-                            <div className="p-4 flex items-center gap-2 text-sm text-muted-foreground">
-                              <Mail className="h-4 w-4" />
-                              {item.email}
-                            </div>
-                          </div>
-                        ))}
+                            </CardContent>
+                          </Card>
+                        )}
                       </div>
                     </section>
                   </div>
@@ -920,9 +1111,122 @@ const ProjectDetails = () => {
             )}
 
             {activeMainTab === 'Calender' && (
-              <ScrollArea className="h-screen lg:w-[100%] pr-2">
-                
-                <Calender/>
+              <ScrollArea className="h-screen lg:w-[100%] pr-2 ">
+
+                <Calender />
+              </ScrollArea>
+
+            )}
+
+            {activeMainTab === 'members' && (
+              <ScrollArea>
+                <div className="flex flex-col h-full gap-6 p-6 bg-gray-50 dark:bg-gray-900">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 dark:bg-gray-900">
+                          <TableHead className="w-[250px]">Thành viên</TableHead>
+                          <TableHead className="hidden md:table-cell">Vị trí</TableHead>
+                          <TableHead className="hidden lg:table-cell">Hình thức làm việc</TableHead>
+                          <TableHead className="hidden md:table-cell">Email</TableHead>
+                          <TableHead className="hidden lg:table-cell">Số điện thoại</TableHead>
+                          <TableHead className="text-center">Nhiệm vụ</TableHead>
+                          <TableHead className="text-right">Thao tác</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {member.map((member) => (
+                          <TableRow key={member.userId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <Avatar>
+                                  <AvatarImage src={member.avatar} alt={member.fullName} />
+                                  <AvatarFallback>{member.fullName}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{member.fullName}</span>
+                                  <span className="text-sm text-muted-foreground md:hidden">{member.position}</span>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">{member.programerPosition}</TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              <Badge variant="outline" className={
+                                member.workType === 'Remote' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
+                                  'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
+                              }>
+                                {member.workType || 'Chưa có'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4 text-gray-400" />
+                                <span className="text-sm">{member.email}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-gray-400" />
+                                <span className="text-sm">{member.phone}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="secondary">{member.issues} Task</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex justify-end gap-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                      {member.workType ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                                      <span className="sr-only">{member.workType ? 'Sửa' : 'Thêm'}</span>
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="sm:max-w-[425px]">
+                                    <DialogHeader>
+                                      <DialogTitle>
+                                        {member.workType ? 'Chỉnh sửa hình thức làm việc' : 'Thêm hình thức làm việc'}
+                                      </DialogTitle>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                      <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label htmlFor="workType" className="text-right">
+                                          Hình thức
+                                        </Label>
+                                        <Select
+                                          onValueChange={(value) =>
+
+                                            updateWorkTypeMenbers(member.userId, value)
+                                          }
+                                          defaultValue={member.workType || undefined}
+                                        >
+                                          <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Chọn hình thức làm việc" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="On-Site">On-Site</SelectItem>
+                                            <SelectItem value="Remote">Remote</SelectItem>
+                                            <SelectItem value="Freelancer">Freelancer</SelectItem>
+                                            <SelectItem value="Hybrid">Hybrid</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+
+                                  </DialogContent>
+                                </Dialog>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Xóa</span>
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               </ScrollArea>
 
             )}

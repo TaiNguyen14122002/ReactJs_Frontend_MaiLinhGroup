@@ -69,6 +69,7 @@ const CreateIssueForm = ({ status }) => {
             priority: data.priority,
             startDate: data.startDate,
             dueDate: data.dueDate,
+            price: data.price,
             status,
         }));
         console.log("create issue data:", data);
@@ -200,6 +201,19 @@ const CreateIssueForm = ({ status }) => {
                                         <SelectItem value="High">Cao</SelectItem>
                                     </SelectContent>
                                 </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Thu nhập</FormLabel>
+                                <FormControl>
+                                    <Input type="number" {...field} placeholder="Nhập số tiền khi hoàn thành..." className="w-full" />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}

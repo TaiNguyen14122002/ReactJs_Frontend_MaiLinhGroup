@@ -72,6 +72,33 @@ aside {
   height: calc(100vh - 64px);
 }
 
+/* Đảm bảo sidebar luôn ở vị trí cố định nhưng không cuộn theo */
+.sidebar {
+  position: fixed;
+  top: 4rem; /* Đảm bảo sidebar luôn ở phía dưới header */
+  left: 0;
+  width: 16rem;
+  height: calc(100vh - 4rem); /* Đảm bảo sidebar không vượt quá chiều cao của trang */
+  overflow-y: auto; /* Giới hạn cuộn bên trong sidebar nếu cần */
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Đảm bảo khi sidebar ẩn, nó sẽ không cuộn */
+.sidebar-hidden {
+  transform: translateX(-100%);
+}
+
+/* Đảm bảo nội dung chính có đủ không gian khi sidebar ẩn */
+.main-content {
+  margin-left: 0; /* Không còn khoảng trống bên trái khi sidebar ẩn */
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.main-content-with-sidebar {
+  margin-left: 16rem; /* Giữ khoảng trống khi sidebar hiển thị */
+}
+
+
 
 
 

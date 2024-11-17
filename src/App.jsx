@@ -45,11 +45,12 @@ function App() {
   const { auth } = useSelector(store => store);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [open, setOpen] = useState(false)
+  const token = localStorage.getItem('jwt')
 
   useEffect(() => {
     dispatch(getUser());
     dispatch(fetchProjects({}));
-  }, [auth.jwt]);
+  }, [auth.jwt, token]);
 
   const toggleNavbar = () => {
     setIsNavbarVisible(prev => !prev);
@@ -123,7 +124,7 @@ const toggleNavbarVisibility = () => {
               draggable
               pauseOnHover
             />
-            <header className="flex h-16 items-center border-b px-4 lg:px-6">
+            <header className="flex h-16 items-center border-b px-4 lg:px-6" style={{ backgroundColor: '#1d86c0' }}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -132,12 +133,12 @@ const toggleNavbarVisibility = () => {
               >
                 <Menu className="h-6 w-6" />
               </Button>
-              <h1 className="text-lg font-semibold">Project Manager</h1>
+              <h1 className="text-lg font-semibold text-white">Project Manager</h1>
               <div className="ml-auto">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative">
-                      <Bell className="h-5 w-5" />
+                      <Bell className="h-5 w-5 text-white" />
                       {unreadCount > 0 && (
                         <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-medium text-white flex items-center justify-center">
                           {unreadCount}
@@ -179,7 +180,7 @@ const toggleNavbarVisibility = () => {
               </div>
             </header>
 
-            <div className="flex">
+            <div className="flex flex-grow">
               <aside
                 className={cn(
                   "fixed top-16 z-20 h-[calc(100vh-4rem)] w-64 border-r bg-background transition-transform lg:static lg:translate-x-0",
@@ -237,11 +238,11 @@ const toggleNavbarVisibility = () => {
                 </div>
               </aside>
 
-              <main className="flex-1 p-4 lg:p-6">
+              <main className="flex-1 p-4 lg:p-6 overflow-y-auto pb-4">
                 <div className="flex flex-col gap-4">
                   <BreadcrumbComponent />
                   {/* Project Cards */}
-                  <div className=" md:grid-cols-2 lg:grid-cols-3">
+                  <div className=" md:grid-cols-2 lg:grid-cols-3 pb-10">
 
                     <Routes>
                       <Route path='/' element={<Home />} />
