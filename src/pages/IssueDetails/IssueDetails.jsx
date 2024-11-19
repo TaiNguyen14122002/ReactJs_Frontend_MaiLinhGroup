@@ -197,6 +197,26 @@ const IssueDetails = () => {
     }
   }
 
+  const updateUserIssueSalaries = async(value) => {
+    try{
+      const requestData = {
+        userId: issue.issueDetails.assignee.id,
+        issueId: issueId,
+        salary: issue.issueDetails?.price * (value / 100),
+      }
+
+      const response = await axios.put(`http://localhost:1000/api/salaries/update`, {}, {
+        params: requestData,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Cập nhập lương xong")
+    }catch(error){
+      console.log("Có lỗi xảy ra trong quá trình thực hiện", error)
+    }
+  }
+
 
   const handleRating = (value) => {
     if (inforUser.id === inforProject.owner?.id) {
@@ -326,7 +346,7 @@ const IssueDetails = () => {
         if(issue.issueDetails?.finish === null || issue.issueDetails?.finish === undefined){
           addUserIssueSalaries(value * 20);
         }else{
-          addUserIssueSalaries(value * 20);
+          updateUserIssueSalaries(value * 20);
           // console.log("Cập nhập lương")
         }
         

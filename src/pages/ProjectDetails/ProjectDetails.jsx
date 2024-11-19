@@ -35,6 +35,7 @@ import Calender from '../Calender/Calender'
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
+import { cn } from '@/lib/utils'
 
 
 
@@ -56,6 +57,10 @@ const ProjectDetails = () => {
   const [rating, setRating] = useState(0)
 
   const { projectstatus, setProjectStatus } = useState(project.projectDetails?.status)
+
+  
+
+
 
 
 
@@ -283,6 +288,17 @@ const ProjectDetails = () => {
   const [inforUser, setInfoUser] = useState([]);
   const [inforProject, setInfoProject] = useState([]);
 
+  const [newGoal, setNewGoal] = useState("")
+  const [fetchproject, setProject] = useState({
+    projectDetails: {
+      name: "",
+      description: "",
+      endDate: "",
+      
+     // Giá trị mặc định cho tên dự án
+    }
+  });
+
   const fetchUser = async () => {
     try {
       const response = await axios.get(`http://localhost:1000/api/users/profile`, {
@@ -298,7 +314,7 @@ const ProjectDetails = () => {
     }
   }
 
-  const fetchProject = async () => {
+  const fetchProjects = async () => {
     try {
       const response = await axios.get(`http://localhost:1000/api/projects/${id}`, {
         headers: {
@@ -307,6 +323,9 @@ const ProjectDetails = () => {
       });
       console.log("Thông tin dự án", response.data);
       setInfoProject(response.data);
+      setProject({
+        projectDetails: response.data,  // Dữ liệu dự án sẽ được lưu trữ trong projectDetails
+      });
     } catch (error) {
       console.log('Có lỗi xẩy ra trong quá trình thực hiện dữ liệu', error)
     }
@@ -354,9 +373,9 @@ const ProjectDetails = () => {
   }
   useEffect(() => {
     fetchUser();
-    fetchProject();
+    fetchProjects();
     return;
-  }, [])
+  }, [token, id])
 
   const displayedMembers = project.projectDetails?.team.slice(0, 5)
   const additionalMembers = Math.max(0, project.projectDetails?.length - 5)
@@ -533,6 +552,50 @@ const ProjectDetails = () => {
     }
   };
 
+  console.log("TaiTaiTaiTai", project)
+
+ 
+
+  const handleChangeproject = (e) => {
+    const { name, value } = e.target;
+    setProject(prevProject => ({
+      ...prevProject,
+      projectDetails: {
+        ...prevProject.projectDetails,
+        [name]: value
+      }
+    }));
+    
+  };
+  
+
+  const handleAddGoal = () => {
+    if (newGoal.trim()) {
+      setProject(prevProject => ({
+        ...prevProject,
+        projectDetails: {
+          ...prevProject.projectDetails,
+          goals: [...prevProject.projectDetails.goals, newGoal.trim()]
+        }
+      }));
+      setNewGoal("");
+
+    }
+  };
+
+  const handleRemoveGoal = (index) => {
+    setProject(prevProject => ({
+      ...prevProject,
+      projectDetails: {
+        ...prevProject.projectDetails,
+        goals: prevProject.projectDetails.goals.filter((_, i) => i !== index)
+      }
+    }));
+  };
+
+
+
+
 
   return (
     <>
@@ -575,71 +638,74 @@ const ProjectDetails = () => {
                             <span className="sr-only">Edit project</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-[800px] w-full p-6">
+
+                        <DialogContent className="sm:max-w-[500px]">
                           <DialogHeader>
-                            <DialogTitle className="text-2xl font-bold">Chỉnh sửa thông tin dự án</DialogTitle>
+                            <DialogTitle className="text-xl font-bold">Chỉnh sửa thông tin dự án</DialogTitle>
                           </DialogHeader>
-                          <div className="grid gap-6 py-6">
+                          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                              <Label htmlFor="name" className="text-base font-semibold">
-                                Tên dự án
-                              </Label>
-                              <Input
-                                id="name"
-                                name="name"
-                                type='text'
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                className="h-12 text-lg"
-                                required
-                              />
+                              <Label htmlFor="name">Tên dự án</Label>
+                              <Input id="name" name="name" value={fetchproject.projectDetails?.name || ""} onChange={(e) => handleChangeproject(e)} 
+                              className="border-[rgb(29,134,192)] focus-visible:ring-[rgb(29,134,192)]" />
                             </div>
                             <div className="grid gap-2">
-                              <Label htmlFor="description" className="text-base font-semibold">
-                                Mô tả
-                              </Label>
+                              <Label htmlFor="description">Mô tả</Label>
                               <Textarea
                                 id="description"
                                 name="description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="min-h-[100px] text-base"
+                                value={fetchproject.projectDetails?.description}
+                                onChange={handleChangeproject}
+                                className="min-h-[100px] border-[rgb(29,134,192)] focus-visible:ring-[rgb(29,134,192)]"
                               />
                             </div>
                             <div className="grid gap-2">
-                              <Label htmlFor="endTime" className="text-base font-semibold">
-                                Thời gian kết thúc
-                              </Label>
-                              <Input
-                                id="endTime"
-                                name="endTime"
-                                type="date"
-                                value={endtime}
-                                onChange={(e) => setEndtime(e.target.value)}
-                                className="h-12 text-lg"
+                              <Label htmlFor="endDate">Thời gian kết thúc</Label>
+                              <Input id="endDate" name="endDate" type="date" value={fetchproject.projectDetails?.endDate} onChange={handleChangeproject} 
                               />
                             </div>
                             <div className="grid gap-2">
-                              <Label htmlFor="goals" className="text-base font-semibold">
-                                Mục tiêu
-                              </Label>
-                              <Textarea
-                                id="goals"
-                                name="goals"
-                                value="{projectInfo.goals}"
-                                className="min-h-[100px] text-base"
-                              />
+                              <Label htmlFor="goals">Mục tiêu</Label>
+                              <ul className="space-y-2">
+                                {fetchproject.projectDetails?.goals?.map((goal, index) => (
+                                  <li key={index} className="flex items-center gap-2">
+                                    <span className="flex-grow">{goal}</span>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleRemoveGoal(index)}
+                                      aria-label={`Xóa mục tiêu: ${goal}`}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </li>
+                                ))}
+                              </ul>
+                              <div className="flex gap-2" >
+                                <Input
+                                  id="goals"
+                                  name='goals'
+                                  value={newGoal}
+                                  onChange={(e) => setNewGoal(e.target.value)}
+                                  placeholder="Thêm mục tiêu mới"
+                                  aria-label="Nhập mục tiêu mới"
+                                  style={{ width: '90%' }}
+                                />
+                                <Button type="button" onClick={handleAddGoal} aria-label="Thêm mục tiêu" className="bg-[rgb(29,134,192)] hover:bg-[rgb(29,134,192)]/90">
+                                  <Plus className="h-4 w-4 mr-2 text-white" />
+                                  Thêm
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex justify-end gap-4">
-                            <Button variant="outline" onClick={() => setIsOpen(false)}>
-                              Hủy
-                            </Button>
-                            <Button onClick={handleSubmit} className="px-8">
-                              Lưu thay đổi
-                            </Button>
-                          </div>
+                            <div className="flex justify-end gap-4">
+                              <Button type="button" variant="outline" className="hover:bg-[rgb(29,134,192)] hover:text-white border-[rgb(29,134,192)]">Hủy</Button>
+                              <Button type="submit" className="bg-[rgb(29,134,192)] hover:bg-[rgb(29,134,192)]/90">Lưu thay đổi</Button>
+                            </div>
+                          </form>
                         </DialogContent>
+
+
                       </Dialog>
 
                       <Button onClick={() => UpdateProjectPinned()} variant="outline" size="icon" title="Ghim dự án">
@@ -1230,11 +1296,7 @@ const ProjectDetails = () => {
               </ScrollArea>
 
             )}
-
-
           </div>
-
-
           <div className='lg:w-[30%] founded-md sticky right-5 top-10'>
             <ChatBox />
           </div>
