@@ -40,20 +40,16 @@ const IssueDetails = () => {
   const [selectedFile, setSelectedFile] = useState(null)
   const fileInputRef = useRef(null)
   const [newComment, setNewComment] = useState("")
-
-
-
-
-
-
   const [status, setStatus] = useState(issue.issueDetails?.status)
 
   const handleUpdateIssueStatus = (status) => {
     dispatch(updateIssueStatus({ status, id: issueId }))
-    toast({
-      title: "Trạng thái đã được cập nhật",
-      description: `Trạng thái của tác vụ đã được thay đổi thành: ${status}`,
-    });
+    toast.success(
+      <div>
+        <strong>Trạng thái đã được cập nhật</strong>
+        <p>Trạng thái của tác vụ đã được thay đổi thành: {status}</p>
+      </div>
+    )
     console.log(status);
   };
 
@@ -95,9 +91,6 @@ const IssueDetails = () => {
     setNewComment("");
   }
 
-
-
-
   const [activities, setActivities] = useState([])
   const [attachments, setAttachments] = useState([
     { name: "report.pdf", size: "2.5 MB" },
@@ -112,8 +105,6 @@ const IssueDetails = () => {
     }
     setActivities(prevActivities => [newActivity, ...prevActivities].slice(0, 5))
   }
-
-
 
   const [inforUser, setInfoUser] = useState([]);
   const [inforProject, setInfoProject] = useState([]);
@@ -148,35 +139,17 @@ const IssueDetails = () => {
     }
   }
 
-
-
   useEffect(() => {
     fetchUser();
     fetchProject();
     return;
   }, [])
 
-  // const fetchIssue = async() => {
-  //   if (inforUser.id === inforProject.owner?.id){
-  //     try{
-  //       const response = await axios.get(`http://localhost:1000/api/issues/project/${projectId}`, {}, {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`
-  //         }
-  //       });
-  //       console.log
-
-  //     }catch(error){
-  //       console.log("Có lỗi xảy ra trong quá trình thực hiện", error)
-  //     }
-  //   }
-  // }
-
   const [rating, setRating] = useState(issue.issueDetails?.finish / 20);
   const [progress, setProgress] = useState(issue.issueDetails?.finish);
 
-  const addUserIssueSalaries = async(value) => {
-    try{
+  const addUserIssueSalaries = async (value) => {
+    try {
       const requestData = {
         userId: issue.issueDetails.assignee.id,
         issueId: issueId,
@@ -192,13 +165,13 @@ const IssueDetails = () => {
       });
       console.log("Done")
 
-    }catch(error){
+    } catch (error) {
       console.log("Có lỗi xảy ra trong quá trình thực hiện", error)
     }
   }
 
-  const updateUserIssueSalaries = async(value) => {
-    try{
+  const updateUserIssueSalaries = async (value) => {
+    try {
       const requestData = {
         userId: issue.issueDetails.assignee.id,
         issueId: issueId,
@@ -212,11 +185,10 @@ const IssueDetails = () => {
         }
       });
       console.log("Cập nhập lương xong")
-    }catch(error){
+    } catch (error) {
       console.log("Có lỗi xảy ra trong quá trình thực hiện", error)
     }
   }
-
 
   const handleRating = (value) => {
     if (inforUser.id === inforProject.owner?.id) {
@@ -224,7 +196,7 @@ const IssueDetails = () => {
       updateFinishIssue(value)
 
       addActivity(`Đánh giá đã được cập nhật thành ${value} sao`)
-      
+
     } else {
       toast.error(
         <div>
@@ -240,7 +212,6 @@ const IssueDetails = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false)
 
-  // Hàm xử lý upload nhiều tệp
   const handleUpload = () => {
     if (!selectedFile || selectedFile.length === 0) {
       toast.error("Không có tệp nào được chọn. Vui lòng chọn ít nhất một tệp để tải lên.");
@@ -328,6 +299,33 @@ const IssueDetails = () => {
       });
   };
 
+  const updateprofitAmount = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:1000/api/projects/${projectId}/update-profit`, 
+        {}, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Cập nhật lợi nhuận thành công:", response.data);
+      const responsee = await axios.put(
+        `http://localhost:1000/api/projects/${projectId}/update-profit`, 
+        {}, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình thực hiện", error);
+    }
+  };
+
   const updateFinishIssue = async (value) => {
     if (inforUser.id === inforProject.owner?.id) {
       try {
@@ -343,13 +341,16 @@ const IssueDetails = () => {
 
         console.log("Đánh giá thành công")
 
-        if(issue.issueDetails?.finish === null || issue.issueDetails?.finish === undefined){
+        if (issue.issueDetails?.finish === null || issue.issueDetails?.finish === undefined) {
           addUserIssueSalaries(value * 20);
-        }else{
+          
+        } else {
           updateUserIssueSalaries(value * 20);
+          
           // console.log("Cập nhập lương")
         }
-        
+        updateprofitAmount();
+
         dispatch(fetchIssueById(issueId));
 
         toast.success(
@@ -380,7 +381,27 @@ const IssueDetails = () => {
   });
 
   const price = issue.issueDetails?.price;  // Giá trị mặc định là 0 nếu không có giá trị
-const formattedPrice = formatPrice.format(price);
+  const formattedPrice = formatPrice.format(price);
+
+  const [projectTabs, setProjectTabs] = useState([]);
+
+  const fetchProjectTabs = async () => {
+    try {
+      const response = await axios.get(`http://localhost:1000/api/taskCategories/project/${projectId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Tabs Project", response.data)
+      setProjectTabs(response.data);
+
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+    }
+  }
+  useEffect(() => {
+    fetchProjectTabs();
+  }, [token, issueId, projectId])
 
 
   return (
@@ -439,7 +460,7 @@ const formattedPrice = formatPrice.format(price);
                 value={issue.issueDetails?.description}
                 disabled
                 style={{ color: 'black' }}
-                
+
               // onChange={handleDescriptionChange}
               />
             </div>
@@ -558,9 +579,14 @@ const formattedPrice = formatPrice.format(price);
                   <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Chưa làm</SelectItem>
+                  {projectTabs.map((tab) => (
+                    <SelectItem key={tab.label} value={tab.label}>
+                      {tab.label}
+                    </SelectItem>
+                  ))}
+                  {/* <SelectItem value="pending">Chưa làm</SelectItem>
                   <SelectItem value="in_progress">Đang hoàn thàh</SelectItem>
-                  <SelectItem value="done">Đã hoàn thành</SelectItem>
+                  <SelectItem value="done">Đã hoàn thành</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>

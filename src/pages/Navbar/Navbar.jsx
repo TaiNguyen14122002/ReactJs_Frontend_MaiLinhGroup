@@ -27,7 +27,7 @@ import { FaBars } from "react-icons/fa";
 
 import ItemCard from "./ItemCard";
 import axios from "axios";
-import { BarChart2, ChevronDown, Home, Inbox, LogOut, Plus, PlusCircle, Settings, Users } from "lucide-react";
+import { AlertCircle, AlertTriangle, BarChart2, ChartNoAxesCombined, ChevronDown, Clock, Home, Inbox, LogOut, Plus, PlusCircle, Settings, Trash2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -190,13 +190,16 @@ const Navbar = () => {
                             <h3 className="mb-2 text-sm font-medium">Kế hoạch</h3>
                             <div className="space-y-1">
                                 <Button onClick={() => handleButtonClick("/project/deleted")} variant="ghost" className="w-full justify-start font-normal">
+                                    <Trash2 className="mr-2 h-4 w-4" />
                                     Kế hoạch đã xoá
 
                                 </Button>
                                 <Button onClick={() => handleButtonClick("/project/expiring")} variant="ghost" className="w-full justify-start font-normal">
+                                    <Clock className="mr-2 h-4 w-4" />
                                     Kế hoạch sắp hết hạn
                                 </Button>
                                 <Button onClick={() => handleButtonClick("/project/expired")} variant="ghost" className="w-full justify-start font-normal">
+                                    <AlertTriangle className="mr-2 h-4 w-4" />
                                     Kế hoạch đã trễ
                                 </Button>
                             </div>
@@ -207,10 +210,28 @@ const Navbar = () => {
                             <h3 className="mb-2 text-sm font-medium">Tác vụ</h3>
                             <div className="space-y-1">
                                 <Button variant="ghost" className="w-full justify-start font-normal">
+                                    <Clock className="mr-2 h-4 w-4" />
                                     Tác vụ sắp hết hạn
                                 </Button>
                                 <Button variant="ghost" className="w-full justify-start font-normal">
+                                    <AlertCircle className="mr-2 h-4 w-4" />
                                     Tác vụ đã trễ
+                                </Button>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                            <h3 className="mb-2 text-sm font-medium">Báo cáo</h3>
+                            <div className="space-y-1">
+                                <Button onClick={() => handleButtonClick("/project/statistical")} variant="ghost" className="w-full justify-start font-normal">
+                                    <ChartNoAxesCombined className="mr-2 h-4 w-4" />
+                                    Chi tiêu dự án
+                                </Button>
+                                <Button onClick={() => handleButtonClick("/project/members")} variant="ghost" className="w-full justify-start font-normal">
+                                    <BarChart2 className="mr-2 h-4 w-4" />
+                                    Chi tiêu từng thành viên
                                 </Button>
                             </div>
                         </div>
@@ -229,20 +250,28 @@ const Navbar = () => {
 
                             </div>
                             {isExpanded && (
-                                <div className="mt-1 space-y-1">
-
-                                    {data.slice(0, visibleCount).map((item, index) => (
-                                        <ItemCard onClick={() => projectInformation(item.id)} key={item.id} label={item.name.charAt(0)} color={colors[index % colors.length]} title={item.name} />
-                                    ))}
+                                <ScrollArea className="h-[200px]">
+                                    <div className="space-y-2">
+                                        {data.slice(0, visibleCount).map((item, index) => (
+                                            <ItemCard
+                                                key={item.id}
+                                                onClick={() => projectInformation(item.id)}
+                                                label={item.name.charAt(0)}
+                                                color={colors[index % colors.length]}
+                                                title={item.name}
+                                            />
+                                        ))}
+                                    </div>
 
                                     {visibleCount < data.length && (
-                                        <h2
+                                        <button
                                             onClick={handleShowMore}
-                                            className="mt-4 text-blue-500 hover:underline">
+                                            className="mt-4 text-blue-500 hover:underline"
+                                        >
                                             Xem thêm
-                                        </h2>
+                                        </button>
                                     )}
-                                </div>
+                                </ScrollArea>
                             )}
 
                         </div>
@@ -263,20 +292,29 @@ const Navbar = () => {
 
                             </div>
                             {isAllExpanded && (
-                                <div className="mt-1 space-y-1">
+                                <ScrollArea className="h-[300px]">
+                                    <div className="space-y-2 pr-4">
+                                        {data.slice(0, visibleCount).map((item, index) => (
+                                            <ItemCard
+                                                key={item.id}
+                                                onClick={() => projectInformation(item.id)}
+                                                label={item.name.charAt(0)}
+                                                color={colors[index % colors.length]}
+                                                title={item.name}
+                                            />
+                                        ))}
 
-                                    {data.slice(0, visibleCount).map((item, index) => (
-                                        <ItemCard onClick={() => projectInformation(item.id)} key={item.id} label={item.name.charAt(0)} color={colors[index % colors.length]} title={item.name} />
-                                    ))}
-
-                                    {visibleCount < data.length && (
-                                        <h2
-                                            onClick={handleShowMore}
-                                            className="mt-4 text-blue-500 hover:underline">
-                                            Xem thêm
-                                        </h2>
-                                    )}
-                                </div>
+                                        {visibleCount < data.length && (
+                                            <Button
+                                                variant="link"
+                                                className="w-full text-primary"
+                                                onClick={handleShowMore}
+                                            >
+                                                Xem thêm
+                                            </Button>
+                                        )}
+                                    </div>
+                                </ScrollArea>
                             )}
 
                         </div>

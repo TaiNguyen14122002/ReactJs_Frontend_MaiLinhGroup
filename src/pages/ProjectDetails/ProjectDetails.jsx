@@ -36,13 +36,14 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/compon
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
+import { TabsContent, TabsList } from '@/components/ui/tabs'
 
 
 
 
 
 const ProjectDetails = () => {
-  const [activeTab, setActiveTab] = useState('pending');
+  const [activeTab, setActiveTab] = useState('Chưa làm');
   const [selectedFile, setSelectedFile] = useState([]); // Trạng thái lưu file đã chọn
   const [uploadProgress, setUploadProgress] = useState(0); // Trạng thái cho tiến trình upload
   const dispatch = useDispatch();
@@ -52,18 +53,9 @@ const ProjectDetails = () => {
   const [processData, setProcessData] = useState(0);
   const token = localStorage.getItem('jwt');
   const [isOpen, setIsOpen] = useState(false)
-
   const maxRating = 5
   const [rating, setRating] = useState(0)
-
   const { projectstatus, setProjectStatus } = useState(project.projectDetails?.status)
-
-  
-
-
-
-
-
   const [activeMainTab, setActiveMainTab] = useState('details');
 
   const handleMainTabChange = (event, newValue) => {
@@ -85,6 +77,7 @@ const ProjectDetails = () => {
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files); // Chuyển đổi FileList thành mảng
     setSelectedFile(files); // Lưu danh sách các file được chọn
+
   };
 
   // Hàm xử lý upload nhiều tệp
@@ -174,7 +167,6 @@ const ProjectDetails = () => {
         setIsUploading(false); // Kết thúc quá trình tải lên ngay cả khi có lỗi
       });
   };
-
 
   const getFileIcon = (fileType) => {
     switch (fileType) {
@@ -294,8 +286,8 @@ const ProjectDetails = () => {
       name: "",
       description: "",
       endDate: "",
-      
-     // Giá trị mặc định cho tên dự án
+
+      // Giá trị mặc định cho tên dự án
     }
   });
 
@@ -388,8 +380,6 @@ const ProjectDetails = () => {
     ))
     setEditingMember(null)
   }
-
-
 
   const fetchMember = async () => {
     if (!token) {
@@ -552,10 +542,6 @@ const ProjectDetails = () => {
     }
   };
 
-  console.log("TaiTaiTaiTai", project)
-
- 
-
   const handleChangeproject = (e) => {
     const { name, value } = e.target;
     setProject(prevProject => ({
@@ -565,9 +551,8 @@ const ProjectDetails = () => {
         [name]: value
       }
     }));
-    
+
   };
-  
 
   const handleAddGoal = () => {
     if (newGoal.trim()) {
@@ -593,6 +578,125 @@ const ProjectDetails = () => {
     }));
   };
 
+  const [projectTabs, setProjectTabs] = useState([]);
+  const [projectIssues, setProjectIssues] = useState([]);
+  const [newTabLabel, setNewTabLabel] = useState('')
+
+  const fetchProjectTabs = async () => {
+    try {
+      const response = await axios.get(`http://localhost:1000/api/taskCategories/project/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Tabs Project", response.data)
+      setProjectTabs(response.data);
+
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+    }
+  }
+
+  const fetchProjectIssue = async () => {
+    try {
+      const response = await axios.get(`http://localhost:1000/api/issues/project/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setProjectIssues(response.data);
+
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+    }
+  }
+
+  const addProjectTabs = async (newTabId) => {
+    try {
+      const requestData = {
+        Label: newTabId
+      }
+      const response = await axios.post(`http://localhost:1000/api/taskCategories/project/${id}`, {}, {
+        params: requestData,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Thêm Tabs thành công");
+      setProjectTabs(prevTabs => [...prevTabs, response.data]);
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+    }
+  }
+
+  const deleteProjectTabs = async (TabsId) => {
+    try {
+      const response = await axios.delete(`http://localhost:1000/api/taskCategories/project/${id}/task/${TabsId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Xoá Tabs thành công")
+
+      setProjectTabs(prevTabs => prevTabs.filter(tab => tab.id !== TabsId))
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+    }
+  }
+
+
+  useEffect(() => {
+    fetchProjectTabs();
+    fetchProjectIssue();
+  }, [id, token])
+
+  const isTabDeletable = (label) => {
+    return !['Chưa làm', 'Đang làm', 'Hoàn thành'].includes(label)
+  }
+
+  const addNewTab = () => {
+    addProjectTabs(newTabLabel)
+    setNewTabLabel('')
+  }
+
+  const handleDeleteTab = (TabsId) => {
+    deleteProjectTabs(TabsId)
+  }
+
+  const PdfExport = async (userId) => {
+    try {
+      
+        const response = await axios.get(`http://localhost:1000/api/export/projects/${id}/users/${userId}/tasks/pdf`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        responseType: 'blob',
+      });
+      // Tạo một blob từ dữ liệu trả về
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+
+      // Tạo URL từ blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Tạo thẻ <a> để tải file
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `report_${userId}_${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+
+      // Xóa URL sau khi tải xong
+      window.URL.revokeObjectURL(url);
+      link.remove();
+
+      console.log("File PDF đã được tải về thành công");
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+    }
+  }
+
+
+
 
 
 
@@ -617,7 +721,6 @@ const ProjectDetails = () => {
             {activeMainTab === 'details' && (
               <ScrollArea className="h-screen lg:w-[100%] pr-2">
                 <div className='text-gray-400 pb-10 w-full'>
-
 
                   <div className="flex items-center gap-4 p-4 bg-white  shadow mb-8">
                     <div className="relative">
@@ -646,8 +749,8 @@ const ProjectDetails = () => {
                           <form onSubmit={handleSubmit} className="grid gap-4 py-4">
                             <div className="grid gap-2">
                               <Label htmlFor="name">Tên dự án</Label>
-                              <Input id="name" name="name" value={fetchproject.projectDetails?.name || ""} onChange={(e) => handleChangeproject(e)} 
-                              className="border-[rgb(29,134,192)] focus-visible:ring-[rgb(29,134,192)]" />
+                              <Input id="name" name="name" value={fetchproject.projectDetails?.name || ""} onChange={(e) => handleChangeproject(e)}
+                                className="border-[rgb(29,134,192)] focus-visible:ring-[rgb(29,134,192)]" />
                             </div>
                             <div className="grid gap-2">
                               <Label htmlFor="description">Mô tả</Label>
@@ -661,7 +764,7 @@ const ProjectDetails = () => {
                             </div>
                             <div className="grid gap-2">
                               <Label htmlFor="endDate">Thời gian kết thúc</Label>
-                              <Input id="endDate" name="endDate" type="date" value={fetchproject.projectDetails?.endDate} onChange={handleChangeproject} 
+                              <Input id="endDate" name="endDate" type="date" value={fetchproject.projectDetails?.endDate} onChange={handleChangeproject}
                               />
                             </div>
                             <div className="grid gap-2">
@@ -692,7 +795,7 @@ const ProjectDetails = () => {
                                   aria-label="Nhập mục tiêu mới"
                                   style={{ width: '90%' }}
                                 />
-                                <Button type="button" onClick={handleAddGoal} aria-label="Thêm mục tiêu" className="bg-[rgb(29,134,192)] hover:bg-[rgb(29,134,192)]/90">
+                                <Button type="button" onClick={handleAddGoal} aria-label="Thêm mục tiêu" className="hover:bg-[rgb(29,134,192)] hover:text-white border-[rgb(29,134,192)]">
                                   <Plus className="h-4 w-4 mr-2 text-white" />
                                   Thêm
                                 </Button>
@@ -735,8 +838,6 @@ const ProjectDetails = () => {
                       <div className="font-medium">{project.projectDetails?.owner.fullname}</div>
                     </div>
                   </div>
-
-
 
                   <div className="space-y-8" style={{ marginTop: '20px' }}>
                     <section className="grid gap-6">
@@ -823,7 +924,7 @@ const ProjectDetails = () => {
                           </div>
                           <div className="mt-2 space-y-1 text-sm">
                             <p>Bắt đầu: {project.projectDetails?.createdDate ? format(new Date(project.projectDetails.createdDate), 'dd/MM/yyyy') : 'Chưa xác định'}</p>
-                            <p>Kết thúc dự kiến: 15/12/2023</p>
+                            <p>Kết thúc dự kiến: {project.projectDetails?.endDate ? format(new Date(project.projectDetails.endDate), 'dd/MM/yyyy') : 'Chưa xác định'}</p>
                           </div>
                         </div>
                       </div>
@@ -864,8 +965,6 @@ const ProjectDetails = () => {
                       </div>
                     </section>
                   </div>
-
-
 
                   <div value="team" className="space-y-8" style={{ marginTop: '20px' }}>
                     <section className="grid gap-6">
@@ -1055,43 +1154,68 @@ const ProjectDetails = () => {
                   </div>
 
                   <section>
-                    <div className="space-y-2">
-                      <h2 className="text-2xl font-semibold tracking-tight">Danh sách tác vụ</h2>
-                      <p className="text-muted-foreground">Danh sách tất cả các tác vụ có trong kế hoạch</p>
-                    </div>
-                    <div className="tabs w-full flex items-center justify-around">
-                      <Tabs
-                        value={activeTab}
-                        onChange={handleChange}
-                        aria-label="task progress tabs"
-                        centered
-                        textColor="secondary"
-                        indicatorColor="secondary"
-                      >
-                        <Tab
-                          label="Chưa làm"
-                          value="pending"
-                          textColor="error.main"
-                          className={activeTab === 'pending' ? 'text-red-500' : 'text-gray-500'}
-                        // style={{ color: activeTab === "pending" ? "red" : "gray" }}
-                        />
-                        <Tab
-                          label="Đang hoàn thành"
-                          value="in_progress"
-                          className={activeTab === 'in_progress' ? 'text-yellow-500' : 'text-gray-500'}
-                        />
-                        <Tab
-                          label="Đã hoàn thành"
-                          value="done"
-                          className={activeTab === 'done' ? 'text-green-500' : 'text-gray-500'}
-                        />
-                      </Tabs>
+                    <div className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg shadow-md">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h2 className="text-2xl font-semibold text-blue-800">Danh sách tác vụ</h2>
+                          <p className="text-sm text-blue-600">
+                            Danh sách tất cả các tác vụ có trong kế hoạch
+                          </p>
+                        </div>
+
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            placeholder="Tên vấn đề mới"
+                            value={newTabLabel}
+                            onChange={(e) => setNewTabLabel(e.target.value)}
+                            className="max-w-[200px] border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                          />
+                          <Button onClick={addNewTab} size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white gap-2 whitespace-nowrap transition-colors duration-300"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Thêm vấn đề
+                          </Button>
+
+                        </div>
+
+                      </div>
+                      <div className="tabs w-full flex items-center justify-around">
+                        <Tabs
+                          value={activeTab}
+                          onChange={handleChange}
+                          aria-label="task progress tabs"
+                          centered
+                          textColor="secondary"
+                          indicatorColor="secondary"
+                        >
+                          {projectTabs.map((tab, index) => (
+                            <Tab
+                              key={index}
+                              // label={tab.label}
+                              label={
+                                <div className="flex items-center space-x-2">
+                                  <span>{tab.label}</span>
+                                  {isTabDeletable(tab.label) && (
+                                    <X
+                                      className="h-4 w-4 text-gray-500 hover:text-white bg-gray-200 hover:bg-red-500 rounded-full p-0.5 transition-colors duration-200 ease-in-out"
+                                      onClick={() => handleDeleteTab(tab.id)}
+                                    />
+                                  )}
+                                </div>
+                              }
+                              value={tab.label}
+                              className={activeTab === tab.label ? 'text-red-500' : 'text-gray-500'}
+                            />
+                          ))}
+                        </Tabs>
+                      </div>
                     </div>
 
                     <div className="tab-content py-5">
-                      {activeTab === 'pending' && <IssueList status="pending" title="Chưa làm" />}
-                      {activeTab === 'in_progress' && <IssueList status="in_progress" title="Đang hoàn thành" />}
-                      {activeTab === 'done' && <IssueList status="done" title="Đã hoàn thành" />}
+                      {projectTabs.map((item, index) => (
+                        activeTab === item.label && <IssueList status={item.label} title={item.label} />
+                      ))}
                     </div>
                   </section>
                 </div>
@@ -1281,6 +1405,10 @@ const ProjectDetails = () => {
 
                                   </DialogContent>
                                 </Dialog>
+                                {/* <Button onClick={() => PdfExport(member.userId)} variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                                  <Download className="h-4 w-4" />
+                                  <span className="sr-only">Thống kê</span>
+                                </Button> */}
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
                                   <Trash2 className="h-4 w-4" />
                                   <span className="sr-only">Xóa</span>

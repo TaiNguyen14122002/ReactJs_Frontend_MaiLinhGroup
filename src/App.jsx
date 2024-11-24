@@ -39,6 +39,10 @@ import ProjectExpired from './pages/ProjectList/ProjectExpired';
 import ProjectDeleted from './pages/ProjectList/ProjectDeleted';
 import Calender from './pages/Calender/Calender';
 import Setting from './pages/Information/Setting';
+import ProjectSpending from './pages/ExportPDF/ProjectSpending';
+import PDFExport from './pages/ExportPDF/PDFExport';
+import MemberInformation from './pages/ExportPDF/MemberInformation';
+import PDFMenberInformation from './pages/ExportPDF/PDFMenberInformation';
 
 function App() {
   const dispatch = useDispatch();
@@ -257,7 +261,12 @@ const toggleNavbarVisibility = () => {
                       <Route path='/project/deleted' element={<ProjectDeleted />} />
                       <Route path='/project/calender' element={<Calender />} />
                       <Route path='/user/information' element={<Setting/>}/>
-                    </Routes>
+                      <Route path='/project/statistical' element={<ProjectSpending/>}/>
+                      <Route path='/project/PDF/Information/:projectId' element={<PDFExport/>}/>
+                      <Route path='/project/members' element={<MemberInformation/>}/>
+                      <Route path='/members/PDF/project/:projectId/issue/:issueId' element={<PDFMenberInformation/>}/>
+                      
+                    </Routes>  
                   </div>
                 </div>
               </main>

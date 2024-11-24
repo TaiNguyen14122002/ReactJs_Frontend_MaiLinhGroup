@@ -5,15 +5,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Building2, Calendar, Code, Mail, MapPin, Phone } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import { Building2, Calendar, Code, Edit, Mail, MapPin, Phone, Upload } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 const Setting = () => {
     const { auth } = useSelector(store => store);
+    const [brightness, setBrightness] = useState(100)
+    const [zoom, setZoom] = useState(100)
+    const [rotation, setRotation] = useState(0)
+    const fileInputRef = useRef(null)
     const translations = {
         en: {
             overview: "Overview",
@@ -74,15 +79,46 @@ const Setting = () => {
         document.documentElement.lang = language
     }, [language])
 
+    const handleImageUpload = (event) => {
+        const file = event.target.files?.[0]
+        if (file) {
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setAvatarSrc(reader.result)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const triggerFileInput = () => {
+        fileInputRef.current?.click()
+    }
+
     return (
         <div className="flex h-screen bg-background text-foreground">
             <main className="flex-1 overflow-auto">
                 <header className="bg-background p-6 border-b flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                        <Avatar className="w-20 h-20">
-                            <AvatarImage src="https://github.com/shadcn.png" alt="Nguyễn Văn A" />
-                            <AvatarFallback>NA</AvatarFallback>
-                        </Avatar>
+                    <div className="relative">
+                                <Avatar className="w-20 h-20">
+                                    <AvatarImage src="https://github.com/shadcn.png" alt="Nguyễn Văn A" />
+                                    <AvatarFallback>NA</AvatarFallback>
+                                </Avatar>
+                                <Label
+                                    htmlFor="image-upload"
+                                    className="absolute bottom-0 right-0 p-1 bg-primary text-primary-foreground rounded-full cursor-pointer"
+                                >
+                                    <Upload className="w-4 h-4" style={{ color: 'white' }} />
+                                </Label>
+                                <Input
+                                    id="image-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                />
+                        </div>
+
                         <div>
                             <h1 className="text-3xl font-bold">{auth.user?.fullname}</h1>
                             <p className="text-xl text-muted-foreground">Full-stack Developer</p>

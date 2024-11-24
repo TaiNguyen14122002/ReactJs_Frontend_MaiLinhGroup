@@ -7,21 +7,46 @@ import UserList from "./UserList"
 import { useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
 import { deleteIssue } from "@/Redux/Issue/Action"
+import { useEffect, useState } from "react"
+import axios from "axios"
 
 
-const IssueCard = ({item, projectId}) => {
+const IssueCard = ({ item, projectId }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const token = localStorage.getItem(`jwt`);
 
     const handleIssueDelete = () => [
-        dispatch(deleteIssue({issueId: item.id}))
+        dispatch(deleteIssue({ issueId: item.id }))
     ]
+
+    const [projectTabs, setProjectTabs] = useState([]);
+
+    const fetchProjectTabs = async () => {
+        try {
+            const response = await axios.get(`http://localhost:1000/api/taskCategories/project/${projectId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            console.log("Tabdfsfwedscfsfwes Project", response.data)
+            setProjectTabs(response.data);
+
+        } catch (error) {
+            console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+        }
+    }
+    useEffect(() => {
+        fetchProjectTabs();
+    }, [token])
+
+
     return (
         <Card className="rounded-md py-1 pb-2">
             <CardHeader className="py-0 pb-1">
                 <div className="flex justify-between items-center">
-                    <CardTitle className="cursor-pointer" onClick = {()=> navigate(`/project/${projectId}/issue/${item.id}`)}>
-                    {item.assignee?.fullname || "Chưa phân công"}
+                    <CardTitle className="cursor-pointer" onClick={() => navigate(`/project/${projectId}/issue/${item.id}`)}>
+                        {item.assignee?.fullname || "Chưa phân công"}
                     </CardTitle>
 
                     <DropdownMenu>
@@ -32,9 +57,9 @@ const IssueCard = ({item, projectId}) => {
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent>
-                            <DropdownMenuItem>Đang hoàn thành</DropdownMenuItem>
-                            <DropdownMenuItem>Hoành thành</DropdownMenuItem>
-                            <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+                            {projectTabs.map((tab) => (
+                                <DropdownMenuItem key={tab.label} value={tab.label}>{tab.label}</DropdownMenuItem>
+                            ))}
                             <DropdownMenuItem onClick={handleIssueDelete}>Xoá nhiệm vụ</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -52,14 +77,14 @@ const IssueCard = ({item, projectId}) => {
                             <Button size="icon" className="bg-gray-900 hover:text-black text-white rounded-full">
                                 <Avatar>
                                     <AvatarFallback>
-                                        <PersonIcon/>
+                                        <PersonIcon />
                                     </AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent>
-                            <UserList issueDetails={item}/>
+                            <UserList issueDetails={item} />
                         </DropdownMenuContent>
 
                     </DropdownMenu>

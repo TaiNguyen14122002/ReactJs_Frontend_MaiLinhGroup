@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { DialogClose, DialogFooter } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
@@ -27,7 +27,10 @@ const CreateProjectForm = () => {
             name: "",
             description: "",
             tags: [],
-            category: ""
+            category: "",
+            endDate: "",
+            fundingAmount: ""
+
         }
     });
 
@@ -61,10 +64,10 @@ const CreateProjectForm = () => {
                         render={({ field }) => (
                             <FormItem>
                                 <Label htmlFor="name" className="text-right">
-                            Tên kế hoạch
-                        </Label>
+                                    Tên kế hoạch
+                                </Label>
                                 <FormControl>
-                                
+
                                     <Input {...field}
                                         type="text"
                                         className="border w-full bordergray-700 py-5 px-5"
@@ -79,8 +82,8 @@ const CreateProjectForm = () => {
                         render={({ field }) => (
                             <FormItem>
                                 <Label htmlFor="description" className="text-right">
-                            Mô tả
-                        </Label>
+                                    Mô tả
+                                </Label>
                                 <FormControl>
                                     <Input {...field}
                                         type="text"
@@ -96,8 +99,8 @@ const CreateProjectForm = () => {
                         render={({ field }) => (
                             <FormItem>
                                 <Label htmlFor="category" className="text-right">
-                            Thể loại
-                        </Label>
+                                    Thể loại
+                                </Label>
                                 <FormControl>
                                     <Select
                                         defaultValue='fullstack'
@@ -122,9 +125,9 @@ const CreateProjectForm = () => {
                         name="tags"
                         render={({ field }) => (
                             <FormItem>
-                                 <Label htmlFor="language" className="text-right">
-                            Ngôn ngữ lập trình
-                        </Label>
+                                <Label htmlFor="language" className="text-right">
+                                    Ngôn ngữ lập trình
+                                </Label>
                                 <FormControl>
                                     <Select
                                         onValueChange={handleTagsChange}
@@ -153,7 +156,37 @@ const CreateProjectForm = () => {
                             </FormItem>
                         )}
                     />
-                     {/* <div className="grid grid-cols-4 items-center gap-4">
+
+                    <FormField control={form.control}
+                        name="endDate"
+                        render={({ field }) => <FormItem className="flex flex-col">
+                            <FormLabel>Ngày kết thúc</FormLabel>
+                            <FormControl>
+                                <Input {...field}
+                                    type="date"
+                                    className="border w-full bordergray-700 py-5 px-5"
+                                    placeholder="Ngày hết hạn ..." />
+
+                            </FormControl>
+
+                            <FormMessage />
+                        </FormItem>}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="fundingAmount"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Tiền cấp cho dự án</FormLabel>
+                                <FormControl>
+                                    <Input type="number" {...field} placeholder="Nhập số tiền cấp cho dự án..." className="w-full" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    {/* <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="endDate" className="text-right">
                             Ngày kết thúc
                         </Label>
