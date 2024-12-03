@@ -153,7 +153,7 @@ const Navbar = () => {
                 <ScrollArea className="flex-1">
                     <div className="space-y-4 p-4">
                         <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setIsModalOpen(true)}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
+                            <PlusCircle className="mr-2 h-4 w-4" color="white" />
                             Thêm dự án mới
                         </Button>
                         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -209,11 +209,11 @@ const Navbar = () => {
                         <div>
                             <h3 className="mb-2 text-sm font-medium">Tác vụ</h3>
                             <div className="space-y-1">
-                                <Button variant="ghost" className="w-full justify-start font-normal">
+                                <Button onClick={() => handleButtonClick("/issues/expiring")} variant="ghost" className="w-full justify-start font-normal">
                                     <Clock className="mr-2 h-4 w-4" />
                                     Tác vụ sắp hết hạn
                                 </Button>
-                                <Button variant="ghost" className="w-full justify-start font-normal">
+                                <Button onClick={() => handleButtonClick("/issues/expired")} variant="ghost" className="w-full justify-start font-normal">
                                     <AlertCircle className="mr-2 h-4 w-4" />
                                     Tác vụ đã trễ
                                 </Button>

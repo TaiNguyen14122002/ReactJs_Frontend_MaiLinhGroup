@@ -1,5 +1,5 @@
 import { fetchChatByProject, fetchChatMessages, sendMessage } from '@/Redux/Chat/Action'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -14,6 +14,7 @@ const ChatBox = () => {
   const { auth, chat } = useSelector(store => store)
   const { id } = useParams();
   const dispatch = useDispatch();
+  const token = localStorage.getItem('jwt')
 
 
   useEffect(() => {
@@ -36,6 +37,30 @@ const ChatBox = () => {
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
   }
+
+  const [avaterUser, setAvaterUser] = useState([])
+
+  const fetchFileUser = async () => {
+    try {
+      if (!token) {
+        console.log("Phiên đăng nhập đã hết hạn")
+      }
+      const response = await axios.get(`http://localhost:1000/api/file-info/user`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Avater", response.data)
+      setAvaterUser(response.data)
+
+    } catch (error) {
+      console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error)
+    }
+  }
+
+  useEffect(() => {
+    fetchFileUser();
+  }, [token])
 
 
 
@@ -100,17 +125,17 @@ const ChatBox = () => {
           >
             {item.sender.id !== auth.user.id && (
               <Avatar className="h-8 w-8">
+                <AvatarImage src={avaterUser[0]?.fileName} alt="Avatar" />
                 <AvatarFallback className="bg-blue-100 text-blue-600">
                   {item.sender.fullname[0]}
                 </AvatarFallback>
               </Avatar>
             )}
-            <div style={{marginTop: '5px'}}
-              className={`max-w-[70%] py-2 px-4 rounded-2xl ${
-                item.sender.id === auth.user.id
+            <div style={{ marginTop: '5px' }}
+              className={`max-w-[70%] py-2 px-4 rounded-2xl ${item.sender.id === auth.user.id
                   ? 'bg-blue-500 text-white rounded-br-none'
                   : 'bg-gray-100 text-gray-800 rounded-bl-none'
-              }`}
+                }`}
             >
               <p className="text-sm font-medium mb-1">{item.sender.fullname}</p>
               <p className="text-sm">{item.content}</p>
@@ -118,6 +143,7 @@ const ChatBox = () => {
             {item.sender.id === auth.user.id && (
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-blue-500 text-white">
+                <AvatarImage src={avaterUser[0]?.fileName} alt="Avatar" />
                   {item.sender.fullname[0]}
                 </AvatarFallback>
               </Avatar>

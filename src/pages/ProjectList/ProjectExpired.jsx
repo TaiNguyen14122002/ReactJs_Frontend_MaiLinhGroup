@@ -7,15 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import axios from 'axios';
-import { AlertTriangleIcon, CalendarIcon, ClockIcon } from 'lucide-react';
+import { addDays, format, parseISO } from 'date-fns';
+import { AlertTriangleIcon, CalendarIcon, ClockIcon, RefreshCw, Search } from 'lucide-react';
+
 import React, { useEffect, useMemo, useState } from 'react'
 
 const ProjectExpired = () => {
     const [listProjects, setListProjects] = useState([]);
     const token = localStorage.getItem('jwt');
     const [selectedProject, setSelectedProject] = useState([])
-    const [endDate, setEndDate] = useState('');
-    
+    const [newEndDate, setNewEndDate] = useState('');
+    const [isLoading, setIsLoading] = useState(false)
+    const [searchTerm, setSearchTerm] = useState('');
+
+
 
     const fetchListProject = async () => {
         if (!token) {
@@ -36,12 +41,6 @@ const ProjectExpired = () => {
 
     }
 
-    const handleDateChange = (event) => {
-        setEndDate(event.target.value);
-    };
-
-
-
     useEffect(() => {
         fetchListProject();
         return;
@@ -57,32 +56,80 @@ const ProjectExpired = () => {
 
     const handleExtend = (project) => {
         setSelectedProject(project);
-        setEndDate(project.endDate)
-      }
+        setNewEndDate(format(addDays(parseISO(project.endDate), 1), 'yyyy-MM-dd'));
+    }
 
-      const handleExtendSubmit = () => {
-        console.log("Gia hạn thành công")
-      }
+    const handleExtendSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedProject || !newEndDate) {
+            console.log("Không có dự án được chọn hoặc ngày kết thúc mới");
+            return;
+        }
+
+        try {
+            const response = await axios.put(`http://localhost:1000/api/projects/${selectedProject.id}/endDate`,
+                newEndDate,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            console.log("Gia hạn thành công", newEndDate);
+
+            // Update the project in the list
+            setListProjects(prevList =>
+                prevList.map(project =>
+                    project.id === selectedProject.id
+                        ? { ...project, endDate: newEndDate }
+                        : project
+                )
+            );
+
+            // Reset the selected project and new end date
+            setSelectedProject(null);
+            setNewEndDate('');
+        } catch (error) {
+            console.log("Xảy ra lỗi khi gia hạn dự án", error);
+        }
+    }
+
+    const filteredProjects = useMemo(() => {
+        return listProjects.filter(project =>
+            project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            project.id.toString().includes(searchTerm)
+        );
+    }, [listProjects, searchTerm]);
 
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col">
-            <header className="bg-white dark:bg-gray-800 shadow">
-                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quản lý kế hoạch trễ hạn</h1>
-                </div>
-            </header>
-            <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div className="min-h-screen w-full bg-gray-100 dark:bg-gray-900 flex flex-col">
+            <main className="flex-grow flex flex-col">
                 <Card className="w-full">
-                    <CardHeader>
-                        <CardTitle className="text-2xl font-bold">Danh sách kế hoạch trễ hạn</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-red-500 to-pink-600 text-white">
+                        <CardTitle className="text-2xl font-bold text-white">Kế hoạch đã hết hạn</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-6">
+                        <div className="flex items-center space-x-2 mb-6">
+                            <div className="relative flex-grow">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <Input
+                                    type="text"
+                                    placeholder="Tìm kiếm theo tiêu đề, mô tả hoặc người được giao"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10 pr-4 py-2 w-full border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                />
+                            </div>
+                        </div>
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[100px]">ID</TableHead>
+                                        
                                         <TableHead>Tên kế hoạch</TableHead>
                                         <TableHead>Ngày bắt đầu</TableHead>
                                         <TableHead>Ngày kết thúc</TableHead>
@@ -91,12 +138,12 @@ const ProjectExpired = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {listProjects.map((project) => {
+                                    {filteredProjects.map((project) => {
                                         const overdueDays = calculateOverdueDays(project.endDate)
-                                        
+
                                         return (
                                             <TableRow key={project.id} className="hover:bg-muted/50 transition-colors">
-                                                <TableCell className="font-medium">{project.id}</TableCell>
+                                                
                                                 <TableCell>{project.name}</TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center">
@@ -120,32 +167,33 @@ const ProjectExpired = () => {
                                                 <TableCell className="text-right">
                                                     <Dialog>
                                                         <DialogTrigger asChild>
-                                                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleExtend(project)}>
+                                                            <Button variant="outline" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onClick={() => handleExtend(project)}>
+                                                                <RefreshCw size={16} color="white" />
                                                                 Gia hạn
                                                             </Button>
                                                         </DialogTrigger>
                                                         <DialogContent>
                                                             <DialogHeader>
-                                                                <DialogTitle>Gia hạn dự án: {selectedProject?.name}</DialogTitle>
+                                                                <DialogTitle>Gia hạn dự án {selectedProject?.name}</DialogTitle>
                                                             </DialogHeader>
                                                             <form onSubmit={handleExtendSubmit} className="space-y-4">
                                                                 <div>
                                                                     <Label htmlFor="newEndDate">Ngày kết thúc mới</Label>
-                                                                    <Input id="newEndDate" value ={endDate} onChange={handleDateChange} type="date" required className="mt-1" />
+                                                                    <Input
+                                                                        id="newEndDate"
+                                                                        value={newEndDate}
+                                                                        onChange={(e) => setNewEndDate(e.target.value)}
+                                                                        min={selectedProject ? format(addDays(parseISO(project.endDate), 1), 'yyyy-MM-dd') : ''}
+                                                                        type="date"
+                                                                        required
+                                                                        className="mt-1"
+                                                                    />
                                                                 </div>
-                                                                <Button type="submit">Xác nhận</Button>
+                                                                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" type="submit">Xác nhận gia hạn</Button>
                                                             </form>
                                                         </DialogContent>
                                                     </Dialog>
-                                                    {/* <Button 
-                            variant="default" 
-                            size="sm"
-                            onClick={() => handleComplete(project.id)}
-                            className="bg-green-500 hover:bg-green-600 text-white"
-                          >
-                            <CheckCircleIcon className="mr-2 h-4 w-4" />
-                            Hoàn thành
-                          </Button> */}
+
                                                 </TableCell>
 
                                             </TableRow>

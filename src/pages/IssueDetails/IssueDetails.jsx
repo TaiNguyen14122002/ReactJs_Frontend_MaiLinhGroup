@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import { fetchIssueById, updateIssueStatus } from "@/Redux/Issue/Action";
 import { fetchComments } from "@/Redux/Comment/Action";
-import { CalendarIcon, Edit2, FileText, Flag, LinkIcon, MenuIcon, SendIcon, Star, TagIcon, Upload, UploadIcon, User } from "lucide-react";
+import { CalendarIcon, Edit2, FileText, Files, Flag, LinkIcon, MenuIcon, SendIcon, Star, TagIcon, Trash2, Upload, UploadIcon, User } from "lucide-react";
 // import { Card, Progress } from "antd";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from "react-toastify";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from '../../../Firebase/FirebaseConfig';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 const IssueDetails = () => {
@@ -211,6 +212,7 @@ const IssueDetails = () => {
   console.log("Duwj asn", inforProject.owner?.id)
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false)
+  const [fileInfo, setFileInfo] = useState([]);
 
   const handleUpload = () => {
     if (!selectedFile || selectedFile.length === 0) {
@@ -264,20 +266,35 @@ const IssueDetails = () => {
                 toast.success(`Upload thành công tệp: ${file.name}! URL: ${downloadURL}`);
 
                 const token = localStorage.getItem('jwt');
-                fetch(`http://localhost:1000/api/issues/uploadFileToIssue/${issueId}/upload`, {
+                const url = new URL(`http://localhost:1000/api/file-info/addFile`);
+                url.searchParams.append('issueId', issueId); // Thêm 'id' vào tham số query
+                url.searchParams.append('fileUrl', downloadURL); // Thêm 'fileUrl' vào tham số query
 
-                  method: 'PUT',
+                fetch(url, {
+                  method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                   },
-                  body: JSON.stringify({ fileNames: [downloadURL] }),
                 })
-                  .then((response) => response.json())
-                  .then((data) => console.log("TaiNguyen", data))
-                  .catch((error) => console.error('Error saving file URL:', error));
+                  .then((response) => {
+                    if (!response.ok) {
+                      throw new Error('Failed to save file URL');
+                    }
+                    return response.json();
+                  })
+                  .then((data) => {
+                    console.log('TaiNguyen', data);
 
-                resolve(); // Hoàn thành Promise
+                    // Cập nhật danh sách fileInfo
+                    setFileInfo((prevFileInfo) => [...prevFileInfo, data]);
+
+                    resolve(); // Hoàn thành Promise
+                  })
+                  .catch((error) => {
+                    console.error('Error saving file URL:', error);
+                    reject(error); // Gọi reject nếu có lỗi
+                  });
               });
           }
         );
@@ -302,8 +319,8 @@ const IssueDetails = () => {
   const updateprofitAmount = async () => {
     try {
       const response = await axios.put(
-        `http://localhost:1000/api/projects/${projectId}/update-profit`, 
-        {}, 
+        `http://localhost:1000/api/projects/${projectId}/update-profit`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -312,15 +329,15 @@ const IssueDetails = () => {
       );
       console.log("Cập nhật lợi nhuận thành công:", response.data);
       const responsee = await axios.put(
-        `http://localhost:1000/api/projects/${projectId}/update-profit`, 
-        {}, 
+        `http://localhost:1000/api/projects/${projectId}/update-profit`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-  
+
     } catch (error) {
       console.log("Có lỗi xảy ra trong quá trình thực hiện", error);
     }
@@ -343,10 +360,10 @@ const IssueDetails = () => {
 
         if (issue.issueDetails?.finish === null || issue.issueDetails?.finish === undefined) {
           addUserIssueSalaries(value * 20);
-          
+
         } else {
           updateUserIssueSalaries(value * 20);
-          
+
           // console.log("Cập nhập lương")
         }
         updateprofitAmount();
@@ -402,6 +419,46 @@ const IssueDetails = () => {
   useEffect(() => {
     fetchProjectTabs();
   }, [token, issueId, projectId])
+
+  const fetchFileInfo = async () => {
+    try {
+      if (!token) {
+        console.log("Phiên đăng nhập đã hết hạn")
+      }
+      const response = await axios.get(`http://localhost:1000/api/file-info/issue/${issueId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Tệp đã tải lên", response.data)
+      setFileInfo(response.data)
+
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá tình thực hiện dữ liệu", error)
+    }
+  }
+
+  useEffect(() => {
+    fetchFileInfo()
+  }, [token, issueId, projectId])
+
+  const deletedFileInfo = async(FileId) => {
+    try{
+      if(!token){
+        console.log("Phiên đăng nhập đã hết hạn")
+      }
+      const response = await axios.delete(`http://localhost:1000/api/file-info/delete/${FileId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      setFileInfo(prevTabs => prevTabs.filter(file => file.id !== FileId));
+      console.log("File", FileId)
+
+    }catch(error){
+      console.log("Có lỗi xảy ra trong quá tình thực hiện dữ liệu", error)
+    }
+  }
 
 
   return (
@@ -512,7 +569,23 @@ const IssueDetails = () => {
             </div>
 
             <div className="space-y-4">
-              <Label className="text-sm font-medium">Tệp đính kèm</Label>
+
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Tệp đính kèm</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center space-x-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                        <Files className="h-4 w-4" />
+                        <span className="font-medium">{fileInfo.length}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Total files uploaded</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <div className="flex items-center space-x-4">
                 <Input
                   type="file"
@@ -525,20 +598,44 @@ const IssueDetails = () => {
                   <Upload className="mr-2 h-4 w-4" /> Tải lên
                 </Button>
               </div>
-              <div className="space-y-2">
-                {issue.issueDetails?.fileNames?.map((file, index) => {
-                  const fileName = decodeURIComponent(file.split('/').pop().split('?')[0]);
-                  const fileNames = fileName.split('/').pop();
+              <div className="space-y-3">
+
+
+                {fileInfo.map((file, index) => {
+                  const filePath = file.fileName
+                  const encodedFileName = filePath.split('%2F').pop()?.split('?')[0]
+                  const fileName = decodeURIComponent(encodedFileName || '')
+                  const fileNames = fileName.split('/').pop()
+
                   return (
-                    <div key={index} className="flex items-center space-x-2 p-2 bg-blue-50 rounded-md">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                      <a href={file} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">
-                        <span>{fileNames}</span>
-                      </a>
-
-                      {/* <span className="text-sm text-muted-foreground">({file.size})</span> */}
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md"
+                    >
+                      <div className="flex items-center space-x-3 overflow-hidden">
+                        <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                        <a
+                          href={filePath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-700 hover:text-blue-800 font-medium truncate"
+                        >
+                          {fileNames}
+                        </a>
+                        {file.size && (
+                          <span className="text-sm text-gray-500 hidden sm:inline">({file.size})</span>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deletedFileInfo(file.id)}
+                        className="text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors duration-200"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete file</span>
+                      </Button>
                     </div>
-
                   )
                 })}
               </div>

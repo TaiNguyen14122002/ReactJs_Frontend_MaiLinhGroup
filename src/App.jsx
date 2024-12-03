@@ -43,6 +43,10 @@ import ProjectSpending from './pages/ExportPDF/ProjectSpending';
 import PDFExport from './pages/ExportPDF/PDFExport';
 import MemberInformation from './pages/ExportPDF/MemberInformation';
 import PDFMenberInformation from './pages/ExportPDF/PDFMenberInformation';
+import IssueExpiring from './pages/IssueList/IssueExpiring';
+import IssueExpired from './pages/IssueList/IssueExpired';
+import axios from 'axios';
+import { formatInTimeZone } from 'date-fns-tz';
 
 function App() {
   const dispatch = useDispatch();
@@ -65,13 +69,9 @@ function App() {
     dispatch(logout());
   };
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, content: "Bạn đã tham gia vào một dự án mới của Tài Nguyễn", timestamp: new Date(2023, 5, 15, 9, 30), read: false },
-    { id: 2, content: "Bạn được phân công nhiệm vụ trong dự án: Xây dựng hệ thống Admin", timestamp: new Date(2023, 5, 14, 14, 0), read: false },
-    { id: 3, content: "Comment on your project: 'Great work!'", timestamp: new Date(2023, 5, 13, 11, 45), read: true },
-  ])
+  const [notifications, setNotifications] = useState([])
 
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.notifications?.filter(n => !n.read).length
 
   const markAsRead = (id) => {
     setNotifications(notifications.map(n =>
@@ -79,15 +79,12 @@ function App() {
     ))
   }
 
-  const formatDate = (date) => {
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+  const formatDate = (timestamp) => {
+    // Định dạng theo múi giờ Việt Nam
+    const timeZone = 'Asia/Ho_Chi_Minh';
+    const date = new Date(timestamp);
+    return formatInTimeZone(date, timeZone, 'yyyy-MM-dd HH:mm:ss');
+  };
 
   const [activeTab, setActiveTab] = useState(null);
   const handleActiTab = (activitiTab) => {
@@ -106,6 +103,54 @@ function App() {
 const toggleNavbarVisibility = () => {
   setIsNavbarVisible(prevState => !prevState);
 };
+
+
+
+const fetchNotification = async() => {
+  try{
+    if(!token){
+      console.log("Phiên đăng nhập đã hết hạn")
+    }
+    const response = await axios.get(`http://localhost:1000/api/notification/notificationanduser`, {
+      headers: {
+        Authorization : `Bearer ${token}`
+      }
+    })
+    console.log("Dữ liệu thông báo", response.data)
+    setNotifications(response.data)
+
+  }catch(error){
+    console.log("Có lỗi xảy ra trong quá tình tải dữ liệu", error)
+  }
+}
+
+useEffect(() => {
+  fetchNotification()
+}, [token])
+
+const [avaterUser, setAvaterUser] = useState([])
+
+const fetchFileUser = async() => {
+  try{
+      if(!token){
+          console.log("Phiên đăng nhập đã hết hạn")
+      }
+      const response = await axios.get(`http://localhost:1000/api/file-info/user`, {
+          headers: {
+              Authorization: `Bearer ${token}`
+          }
+      });
+      console.log("Avater", response.data)
+      setAvaterUser(response.data)
+
+  }catch(error){
+      console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error)
+  }
+}
+
+useEffect(() => {
+  fetchFileUser();
+}, [token])
 
 
 
@@ -151,13 +196,13 @@ const toggleNavbarVisibility = () => {
                       <span className="sr-only">Thông báo</span>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-80 max-h-[400px] overflow-y-auto">
+                  <PopoverContent className="w-80 max-h-[600px] overflow-y-auto">
                     <div className="grid gap-4">
                       <h3 className="font-semibold">Thông báo</h3>
-                      {notifications.length === 0 ? (
+                      {notifications.notifications?.length === 0 ? (
                         <p className="text-sm text-muted-foreground">Không có thông báo.</p>
                       ) : (
-                        notifications.map((notification) => (
+                        notifications.notifications?.map((notification) => (
                           <div key={notification.id} className={`flex items-start gap-4 p-2 rounded-md ${notification.read ? 'bg-background' : 'bg-muted'}`}>
                             <Bell className="mt-1 h-5 w-5" />
                             <div className="grid gap-1 flex-1">
@@ -170,7 +215,7 @@ const toggleNavbarVisibility = () => {
                                   className="justify-start px-0 text-muted-foreground"
                                   onClick={() => markAsRead(notification.id)}
                                 >
-                                  Mark as read
+                                  Đánh dấu đã đọc
                                 </Button>
                               )}
                             </div>
@@ -210,7 +255,7 @@ const toggleNavbarVisibility = () => {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="w-full justify-start">
                           <Avatar className="mr-2 h-6 w-6">
-                            <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
+                            <AvatarImage src={avaterUser[0]?.fileName} alt="Avatar" />
                             <AvatarFallback>JD</AvatarFallback>
                           </Avatar>
                           {auth.user?.fullname}
@@ -265,6 +310,8 @@ const toggleNavbarVisibility = () => {
                       <Route path='/project/PDF/Information/:projectId' element={<PDFExport/>}/>
                       <Route path='/project/members' element={<MemberInformation/>}/>
                       <Route path='/members/PDF/project/:projectId/issue/:issueId' element={<PDFMenberInformation/>}/>
+                      <Route path='/issues/expiring' element={<IssueExpiring/>}/>
+                      <Route path='/issues/expired' element={<IssueExpired/>}/>
                       
                     </Routes>  
                   </div>

@@ -19,10 +19,10 @@ import { storage } from '../../../Firebase/FirebaseConfig'; // Import cấu hìn
 import GetIssuesCountByStatus from '../Chart/Issue/GetIssuesCountByStatus'
 
 import { GiPin } from "react-icons/gi";
-import { ArrowUpDown, CheckCircle2, Download, Edit, FileIcon, FileText, FileTextIcon, ImageIcon, Mail, MoreVertical, Pencil, Phone, Pin, Plus, RefreshCw, Star, Trash2, Upload, X, XCircle } from 'lucide-react'
+import { ArrowUpDown, Calendar, CheckCircle2, Download, Edit, FileIcon, FileText, FileTextIcon, ImageIcon, Mail, MoreVertical, Pencil, Phone, Pin, Plus, RefreshCw, Star, Trash2, Upload, X, XCircle } from 'lucide-react'
 
 
-import { format } from 'date-fns'
+import { addDays, format, parseISO } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-toastify'
@@ -57,6 +57,7 @@ const ProjectDetails = () => {
   const [rating, setRating] = useState(0)
   const { projectstatus, setProjectStatus } = useState(project.projectDetails?.status)
   const [activeMainTab, setActiveMainTab] = useState('details');
+  const [avaterUser, setAvaterUser] = useState([])
 
   const handleMainTabChange = (event, newValue) => {
     setActiveMainTab(newValue);
@@ -134,19 +135,44 @@ const ProjectDetails = () => {
                 toast.success(`Upload thành công tệp: ${file.name}! URL: ${downloadURL}`);
 
                 const token = localStorage.getItem('jwt');
-                fetch(`http://localhost:1000/api/projects/uploadFileToProject/${id}/upload`, {
-                  method: 'PUT',
+                // fetch(`http://localhost:1000/api/projects/uploadFileToProject/${id}/upload`, {
+                //   method: 'PUT',
+                //   headers: {
+                //     'Content-Type': 'application/json',
+                //     'Authorization': `Bearer ${token}`,
+                //   },
+                //   body: JSON.stringify({ fileNames: [downloadURL] }),
+                // })
+                const url = new URL(`http://localhost:1000/api/file-info/addFile`);
+                url.searchParams.append('projectId', id); // Thêm 'id' vào tham số query
+                url.searchParams.append('fileUrl', downloadURL); // Thêm 'fileUrl' vào tham số query
+
+                fetch(url, {
+                  method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                   },
-                  body: JSON.stringify({ fileNames: [downloadURL] }),
                 })
-                  .then((response) => response.json())
-                  .then((data) => console.log("TaiNguyen", data))
-                  .catch((error) => console.error('Error saving file URL:', error));
+                  .then((response) => {
+                    if (!response.ok) {
+                      throw new Error('Failed to save file URL');
+                    }
+                    return response.json();
+                  })
+                  .then((data) => {
+                    console.log('TaiNguyen', data);
 
-                resolve(); // Hoàn thành Promise
+                    // Cập nhật danh sách fileInfo
+                    setFileInfo((prevFileInfo) => [...prevFileInfo, data]);
+
+                    resolve(); // Hoàn thành Promise
+                  })
+                  .catch((error) => {
+                    console.error('Error saving file URL:', error);
+                    reject(error); // Gọi reject nếu có lỗi
+                  });
+
               });
           }
         );
@@ -206,9 +232,27 @@ const ProjectDetails = () => {
     console.log("Downloading:", filePath)
   }
 
-  const handleDelete = (fileName) => {
-    // Implement delete logic here
-    console.log("Deleting:", fileName)
+  const handleDelete = async (FileInfoId) => {
+    console.log("Deleting:", FileInfoId)
+    try {
+      if (!token) {
+        console.log("Phiên đăng nhập đã hết hạn")
+      }
+      const response = await axios.delete(`http://localhost:1000/api/file-info/delete/${FileInfoId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Xoá tệp thành công")
+
+      // Cập nhật danh sách fileInfo cục bộ
+      setFileInfo((prevFileInfo) =>
+        prevFileInfo.filter((file) => file.id !== FileInfoId)
+      );
+
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error)
+    }
   }
 
   const removeFile = (index) => {
@@ -247,10 +291,28 @@ const ProjectDetails = () => {
 
 
 
-  const handleSubmit = () => {
-    // Here you would typically send the updated projectInfo to your backend
-    console.log('Updated project info:', projectInfo)
-    setIsOpen(false)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    console.log('Updated project info:', fetchproject)
+
+    if (!token) {
+      console.log("Phiên đăng nhập đã hết hạn")
+    }
+    try {
+      const response = await axios.put(`http://localhost:1000/api/projects/updateProject/${id}`, fetchproject.projectDetails, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Cập nhật thành công", response.data);
+      setIsOpen(false)
+      dispatch(fetchProjectById(id))
+
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình thực hiện dữ liệu", error)
+    }
+
   }
 
   const UpdateProjectPinned = async () => {
@@ -287,7 +349,7 @@ const ProjectDetails = () => {
       description: "",
       endDate: "",
 
-      // Giá trị mặc định cho tên dự án
+
     }
   });
 
@@ -665,8 +727,8 @@ const ProjectDetails = () => {
 
   const PdfExport = async (userId) => {
     try {
-      
-        const response = await axios.get(`http://localhost:1000/api/export/projects/${id}/users/${userId}/tasks/pdf`, {
+
+      const response = await axios.get(`http://localhost:1000/api/export/projects/${id}/users/${userId}/tasks/pdf`, {
         headers: {
           Authorization: `Bearer ${token}`
         },
@@ -695,7 +757,107 @@ const ProjectDetails = () => {
     }
   }
 
+  const [fileInfo, setFileInfo] = useState([]);
 
+  const fetchFileInfo = async () => {
+    try {
+      if (!token) {
+        console.log("Phiên đăng nhập đã hết hạn")
+      }
+      const response = await axios.get(`http://localhost:1000/api/file-info/project/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Tệp đã tải lên của dự án: ", response.data)
+      setFileInfo(response.data)
+
+    } catch (error) {
+      console.log("Có lôi xảy ra trong quá trình thực hiển dữ liệu", error)
+    }
+  }
+
+  useEffect(() => {
+    fetchFileInfo();
+  }, [token, id])
+
+  const fetchFileUser = async () => {
+    try {
+      if (!token) {
+        console.log("Phiên đăng nhập đã hết hạn")
+      }
+      const response = await axios.get(`http://localhost:1000/api/file-info/user`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Avater", response.data)
+      setAvaterUser(response.data)
+
+    } catch (error) {
+      console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error)
+    }
+  }
+
+  useEffect(() => {
+    fetchFileUser();
+  }, [token])
+
+  const [isExtensionDialogOpen, setIsExtensionDialogOpen] = useState(false)
+  const [newEndDate, setNewEndDate] = useState('');
+  const [minDate, setMinDate] = useState('');
+
+  useEffect(() => {
+    if (project.projectDetails?.endDate) {
+      // Chuyển đổi ngày kết thúc và cập nhật newEndDate
+      const formattedEndDate = project.projectDetails.endDate.split('T')[0];
+      setNewEndDate(formattedEndDate);
+
+      // Cập nhật minDate (thêm 1 ngày)
+      const calculatedMinDate = format(
+        addDays(parseISO(formattedEndDate), 1),
+        'yyyy-MM-dd'
+      );
+      setMinDate(calculatedMinDate);
+    }
+  }, [project.projectDetails?.endDate]);
+
+  const handleExtend = async () => {
+    if (newEndDate) {
+      try {
+        const response = await axios.put(`http://localhost:1000/api/projects/${id}/endDate`,
+          newEndDate,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          });
+        if (response.status === 200) {
+          console.log("Gia hạn thành công", newEndDate);
+
+          // Cập nhật lại dữ liệu dự án sau khi gia hạn
+          dispatch(fetchProjectById(id));
+
+          // Đặt lại ngày kết thúc mới và đóng hộp thoại
+          setNewEndDate('');
+          setIsExtensionDialogOpen(false);
+        } else {
+          console.log("Lỗi khi cập nhật ngày kết thúc");
+        }
+
+      } catch (error) {
+        console.log("Có lỗi xảy ra trong quá trình thực hiện dữ liệu")
+      }
+
+      console.log("Ngày gia hạn mới", newEndDate)
+
+    }
+  }
+
+  const toggleMenu = () => {
+    setIsExtensionDialogOpen(!isExtensionDialogOpen); // Đảo ngược trạng thái dropdown khi nhấn
+  };
 
 
 
@@ -826,7 +988,7 @@ const ProjectDetails = () => {
                   <div className="flex items-center gap-3 p-4 rounded-lg border bg-muted/50">
                     <div className="relative h-10 w-10">
                       <img
-                        src="/placeholder.svg"
+                        src={avaterUser[0]?.fileName}
                         alt="Avatar"
                         className="rounded-full object-cover"
                         height={40}
@@ -910,10 +1072,10 @@ const ProjectDetails = () => {
                             <h2 className="text-sm font-medium">Thời gian</h2>
                             <DropdownMenu>
                               <DropdownMenuTrigger className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
-                                <MoreVertical className="h-5 w-5" />
+                                <MoreVertical className="h-5 w-5" onClick={toggleMenu} />
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => console.log("Gia hạn")}>
+                                <DropdownMenuItem onClick={() => setIsExtensionDialogOpen(true)}>
                                   <div className="flex items-center">
                                     <RefreshCw className="mr-2 h-4 w-4" />
                                     <span>Gia hạn</span>
@@ -921,7 +1083,33 @@ const ProjectDetails = () => {
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
+
+                            <Dialog open={isExtensionDialogOpen} onOpenChange={setIsExtensionDialogOpen}>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Gia hạn dự án {project.projectDetails?.name}</DialogTitle>
+                                </DialogHeader>
+                                <div className="py-4">
+                                  <Label htmlFor="newEndDate">Ngày kết thúc mới</Label>
+                                  <Input
+                                    id="newEndDate"
+                                    value={newEndDate}
+                                    onChange={(e) => setNewEndDate(e.target.value)}
+                                    min={minDate}  // Đảm bảo minDate đã được xác định trước đó
+                                    type="date"
+                                    required
+                                    className="mt-1"
+                                  />
+                                </div>
+                                <DialogFooter>
+                                  <Button type="button" onClick={handleExtend}>
+                                    Xác nhận
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
                           </div>
+
                           <div className="mt-2 space-y-1 text-sm">
                             <p>Bắt đầu: {project.projectDetails?.createdDate ? format(new Date(project.projectDetails.createdDate), 'dd/MM/yyyy') : 'Chưa xác định'}</p>
                             <p>Kết thúc dự kiến: {project.projectDetails?.endDate ? format(new Date(project.projectDetails.endDate), 'dd/MM/yyyy') : 'Chưa xác định'}</p>
@@ -1060,7 +1248,9 @@ const ProjectDetails = () => {
                             <h2 className="text-2xl font-bold">Tệp đã tải lên</h2>
                             <div className="flex items-center space-x-2 bg-primary/10 text-primary px-3 py-1 rounded-full">
                               <FileIcon className="h-4 w-4" />
-                              <span className="text-sm font-medium">{project.projectDetails?.fileNames.length}</span>
+                              {/* <span className="text-sm font-medium">{project.projectDetails?.fileNames.length}</span> */}
+                              <span className="text-sm font-medium">{fileInfo?.length}</span>
+
                             </div>
                           </div>
                           <div className='w-full max-w-md mx-auto p-6 space-y-6'>
@@ -1233,13 +1423,17 @@ const ProjectDetails = () => {
               <ScrollArea className="h-screen lg:w-[100%] pr-2">
                 <div className="h-screen w-full bg-gradient-to-br from-background to-secondary/20 flex flex-col">
                   <h2 className="text-2xl font-bold mb-6">Tệp đã tải lên</h2>
-
-                  {project.projectDetails?.fileNames && project.projectDetails.fileNames.length > 0 ? (
+                  {fileInfo && fileInfo.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {project.projectDetails.fileNames.map((filePath, index) => {
-                        const cleanFilePath = filePath.split('?')[0]; // Loại bỏ các tham số sau dấu '?'
-                        const fileName = cleanFilePath.split('/').pop();
-                        const fileExtension = cleanFilePath.split('.').pop().toLowerCase();
+                      {fileInfo.map((file, index) => {
+                        const filePath = file?.fileName; // Đường dẫn file
+                        if (!filePath) return null; // Bỏ qua nếu không có filePath
+
+                        // Tách tên tệp
+                        const encodedFileName = filePath.split('%2F').pop()?.split('?')[0]; // Lấy tên tệp mã hóa
+                        const fileName = decodeURIComponent(encodedFileName); // Giải mã tên tệp
+
+                        const fileExtension = fileName.split('.').pop().toLowerCase();
 
                         return (
                           <Card key={index} className="overflow-hidden">
@@ -1247,12 +1441,8 @@ const ProjectDetails = () => {
                               <div className="flex items-center space-x-4">
                                 {getFileIcon(fileExtension)}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-900 truncate">
-                                    {fileName}
-                                  </p>
-                                  <p className="text-sm text-gray-500 truncate">
-                                    {fileExtension.toUpperCase()}
-                                  </p>
+                                  <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
+                                  <p className="text-sm text-gray-500 truncate">{fileExtension.toUpperCase()}</p>
                                 </div>
                               </div>
                               {['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(fileExtension) && (
@@ -1264,7 +1454,7 @@ const ProjectDetails = () => {
                                   />
                                 </div>
                               )}
-                              <div className="flex justify-between p-2" style={{ marginBottom: '0' }}>
+                              <div className="flex justify-between items-center mt-4">
                                 <a href={filePath}>
                                   <Button
                                     variant="outline"
@@ -1280,7 +1470,7 @@ const ProjectDetails = () => {
                                 <Button
                                   variant="destructive"
                                   size="sm"
-                                  onClick={() => handleDelete(file.name)}
+                                  onClick={() => handleDelete(file?.id)}
                                 >
                                   <TrashIcon className="h-4 w-4 mr-2" />
                                   Xoá
@@ -1293,9 +1483,14 @@ const ProjectDetails = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Badge variant="secondary" className="text-sm">Chưa có tệp nào</Badge>
+                      <Badge variant="secondary" className="text-sm">
+                        Chưa có tệp nào
+                      </Badge>
                     </div>
                   )}
+
+
+
                 </div>
               </ScrollArea>
             )}
@@ -1330,7 +1525,7 @@ const ProjectDetails = () => {
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Avatar>
-                                  <AvatarImage src={member.avatar} alt={member.fullName} />
+                                  <AvatarImage src={member.fileName} alt={member.fullName} />
                                   <AvatarFallback>{member.fullName}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
