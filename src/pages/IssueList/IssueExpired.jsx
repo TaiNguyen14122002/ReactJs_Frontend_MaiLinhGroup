@@ -8,9 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import axios from 'axios';
 import { addDays, differenceInDays, format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, CalendarCheck, CalendarIcon, Clock, DollarSign, RefreshCw, Search, User } from 'lucide-react';
+import { AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, CalendarCheck, CalendarIcon, Clock, DollarSign, Eye, RefreshCw, Search, User } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { LoadingPopup } from '../Performance/LoadingPopup';
 
 const IssueExpired = () => {
     const token = localStorage.getItem('jwt')
@@ -18,27 +20,33 @@ const IssueExpired = () => {
     const [selectedTask, setSelectedTask] = useState(null);
     const [extensionDays, setExtensionDays] = useState('');
     const [isLoading, setIsLoading] = useState(false)
+    const [isOpen, setIsOpen] = useState(true);
 
     const fetchIssueExpired = async () => {
-        try {
-            if (!token) {
-                console.log("Phiên đăng nhập đã hết hạn")
-            }
+        setIsOpen(true);
+        if (!token) {
+            console.log("Phiên đăng nhập đã hết hạn");
+            setIsOpen(false); // Tắt popup nếu không có token
+            return; // Dừng hàm nếu token không tồn tại
+        }
 
+        try {
             const response = await axios.get(`http://localhost:1000/api/issues/expired`, {
                 headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            })
-            console.log("Dữ liệu", response.data)
-            setExpired(response.data)
-
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log("Dữ liệu:", response.data);
+            setExpired(response.data); // Lưu dữ liệu vào trạng thái
         } catch (error) {
-            console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error)
+            console.error("Có lỗi xảy ra trong quá trình tải dữ liệu:", error);
+        } finally {
+            setIsOpen(false); // Đảm bảo popup luôn tắt sau khi xử lý xong
         }
-    }
+    };
 
     useEffect(() => {
+        setIsOpen(true);
         fetchIssueExpired();
     }, [token])
 
@@ -218,8 +226,13 @@ const IssueExpired = () => {
             setIsLoading(false)
         }
     }
+    const navigate = useNavigate();
+    const handleRowClick = (itemId, projectId) => {
+        navigate(`/project/${projectId}/issue/${itemId}`); // Chuyển hướng đến trang chi tiết của nhiệm vụ
+    };
 
     return (
+        
         <Card className="w-full shadow-lg">
             <CardHeader className="bg-gradient-to-r from-red-500 to-pink-600 text-white">
                 <CardTitle className="text-2xl font-bold text-white">Nhiệm vụ đã hết hạn</CardTitle>
@@ -258,7 +271,7 @@ const IssueExpired = () => {
 
                         <TableBody>
                             {filteredAndSortedTasks.map((task) => (
-                                <TableRow key={task.id} className="hover:bg-gray-50 transition-colors">
+                                <TableRow key={task.id} className="hover:bg-gray-50 transition-colors" >
                                     <TableCell className="font-medium">{task.title}</TableCell>
                                     <TableCell className="max-w-xs truncate">{task.description}</TableCell>
                                     <TableCell>
@@ -302,45 +315,58 @@ const IssueExpired = () => {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setSelectedTask(task)}
-                                                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                                                >
-                                                    <RefreshCw size={16} color="white" />
-                                                    Gia hạn
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Gia hạn nhiệm vụ {task.title}</DialogTitle>
-                                                </DialogHeader>
-                                                <div className="grid gap-4 py-4">
-                                                    <div className="grid grid-cols-4 items-center gap-4">
-                                                        <Label htmlFor="extensionDays" className="text-sm font-medium">
-                                                            Ngày hết hạn mới
-                                                        </Label>
+                                        <div className="flex space-x-2">
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setSelectedTask(task)}
+                                                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                                    >
+                                                        <RefreshCw size={16} color="white" />
+                                                        Gia hạn
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Gia hạn nhiệm vụ {task.title}</DialogTitle>
+                                                    </DialogHeader>
+                                                    <div className="grid gap-4 py-4">
+                                                        <div className="grid grid-cols-4 items-center gap-4">
+                                                            <Label htmlFor="extensionDays" className="text-sm font-medium">
+                                                                Ngày hết hạn mới
+                                                            </Label>
 
-                                                        <Input
-                                                            id="extensionDays"
-                                                            type="date"
-                                                            className="col-span-3"
-                                                            value={extensionDays}
-                                                            onChange={(e) => setExtensionDays(e.target.value)}
-                                                            min={task ? format(addDays(parseISO(task.dueDate), 1), 'yyyy-MM-dd') : ''}
-                                                            
-                                                        />
+                                                            <Input
+                                                                id="extensionDays"
+                                                                type="date"
+                                                                className="col-span-3"
+                                                                value={extensionDays}
+                                                                onChange={(e) => setExtensionDays(e.target.value)}
+                                                                min={task ? format(addDays(parseISO(task.dueDate), 1), 'yyyy-MM-dd') : ''}
+
+                                                            />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => selectedTask && handleExtendDueDate(selectedTask.id)}
-                                                    disabled={isLoading}>
-                                                    {isLoading ? 'Đang xử lý...' : 'Xác nhận gia hạn'}
-                                                </Button>
-                                            </DialogContent>
-                                        </Dialog>
+                                                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => selectedTask && handleExtendDueDate(selectedTask.id)}
+                                                        disabled={isLoading}>
+                                                        {isLoading ? 'Đang xử lý...' : 'Xác nhận gia hạn'}
+                                                    </Button>
+                                                </DialogContent>
+                                            </Dialog>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleRowClick(task.id, task.projectID)}
+                                                className="bg-green-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                            >
+                                                <Eye size={16} color="white" className="mr-2" />
+                                                Chi tiết
+                                            </Button>
+
+                                        </div>
+
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -350,6 +376,7 @@ const IssueExpired = () => {
                 </div>
 
             </CardContent>
+            <LoadingPopup isOpen={isOpen} />
 
         </Card>
     )

@@ -151,22 +151,26 @@ const GetIssuesCountByStatus = () => {
     //Biểu đồ Hiển thị trạng thái nhiệm vụ các thành viên
 
     const labels = Object.keys(countByStatusAndAssignee);
-    const inProgressData = labels.map(user => countByStatusAndAssignee[user].in_progress || 0);
-    const pendingData = labels.map(user => countByStatusAndAssignee[user].pending || 0);
-    const doneData = labels.map(user => countByStatusAndAssignee[user].done || 0);
+
+    // Duyệt qua từng user và lấy dữ liệu theo trạng thái
+    const inProgressData = labels.map(user => countByStatusAndAssignee[user]?.['Chưa làm'] || 0);
+    const pendingData = labels.map(user => countByStatusAndAssignee[user]?.['Đang làm'] || 0);
+    const doneData = labels.map(user => countByStatusAndAssignee[user]?.['Hoàn thành'] || 0);
+
 
     const barDataStatus = {
         labels: labels,
         datasets: [
             {
-                label: 'Đang làm',
+                
+                label: 'Chưa làm',
                 data: inProgressData,
                 backgroundColor: '#ff6f61',
                 borderColor: '#ff6f61',
                 borderWidth: 1,
             },
             {
-                label: 'Chưa làm',
+                label: 'Đang làm',
                 data: pendingData,
                 backgroundColor: '#8884d8',
                 borderColor: '#8884d8',
@@ -233,13 +237,23 @@ const GetIssuesCountByStatus = () => {
         }
     };
 
+    const statss = {
+        pending: stats['Chưa làm'] || 0,  // Lấy số lượng "Chưa làm"
+        done: stats['Hoàn thành'] || 0,
+        in_progress: stats['Đang làm'] || 0      // Lấy số lượng "Hoàn thành"
+    };
+
+
     // Dữ liệu cho biểu đồ Pie
     const pieData = {
-        labels: ['Chưa phân công', 'Chưa làm', 'Đang làm', 'Hoàn thành'],
+        // labels: ['Chưa phân công', 'Chưa làm', 'Đang làm', 'Hoàn thành'],
+        // labels: Object.keys(stats),
+        labels: Object.keys(stats).map(key => key === "notyetassigned" ? "Chưa phân công" : key),
         datasets: [
             {
                 label: 'Nhiệm vụ',
-                data: [stats.notyetassigned, stats.pending, stats.in_progress, stats.done],  // Dữ liệu cho biểu đồ
+                // data: [stats.notyetassigned, statss.pending, stats.in_progress, stats.done],  // Dữ liệu cho biểu đồ
+                data: Object.values(stats),
                 backgroundColor: ['#8884d8', '#ff6f61', '#ffeb3b', '#4caf50'],  // Màu nền riêng cho từng phần
                 borderColor: ['#ffffff'],  // Đường viền màu trắng cho từng phần
                 borderWidth: 1,
@@ -326,80 +340,7 @@ const GetIssuesCountByStatus = () => {
 
 
     return (
-        // <div>
-        //     <div style={{ display: 'flex' }}>
-        //         <div style={{ width: '100%' }}>
-        //             <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Thống kê độ ưu tiên</h3>
-        //             <div>
-        //                 <div style={{ width: '90%', margin: 'auto' }}>
 
-        //                     <Bar data={barData} options={barOptions} />
-        //                     <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Hình 1: Thống kê nhiệm vụ theo độ ưu tiên</h4>
-        //                 </div>
-        //                 <div style={{ width: '70%', margin: 'auto' }}>
-
-        //                     <Pie data={pieData} options={pieOptions} />
-        //                     <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Hình 2: Thống kê nhiệm vụ được phân công theo biểu đồ tròn</h4>
-        //                 </div>
-        //             </div>
-        //         </div>
-
-        //         <div style={{ width: '100%' }}>
-        //             <div>
-        //                 <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: '25px', fontWeight: '600' }}>Danh sách các nhiệm vụ</h3>
-        //                 <Paper sx={{ height: 450, width: '100%' }}>
-        //                     <DataGrid
-        //                         rows={rows}
-        //                         columns={columns}
-        //                         initialState={{ pagination: { paginationModel } }}
-        //                         pageSizeOptions={[5, 10]}
-        //                         checkboxSelection
-        //                         onRowClick={handleRowClick}
-        //                         sx={{ border: 0 }} />
-
-        //                 </Paper>
-        //                 <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Bảng 1: Danh sách các nhiệm vụ được giao cho bạn</h4>
-        //             </div>
-        //             <div style={{ marginTop: '100px' }}>
-        //                 <h1></h1>
-        //                 <div style={{ margin: 'auto' }}>
-
-        //                     <div style={{ width: '100%' }}>
-        //                         <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Thống kê vấn đề </h3>
-        //                         <div>
-        //                             <div style={{ margin: 'auto' }}>
-
-        //                                 <Bar data={barDataStatus} options={barOptions} />
-        //                                 <h4 style={{ textAlign: 'center', marginTop: '10px', marginBottom: ' 25px', fontWeight: '600' }}>Hình 3: Thống kê phân công nhiệm vụ từng thành viên</h4>
-        //                             </div>
-
-        //                         </div>
-        //                     </div>
-        //                 </div>
-        //             </div>
-
-        //         </div>
-        //     </div>
-        //     <div>
-        //         <div style={{ width: '100%' }}>
-        //             <div>
-        //                 <h3 style={{ textAlign: 'center', marginTop: '10px', marginBottom: '25px', fontWeight: '600' }}>Danh sách các nhiệm vụ</h3>
-        //                 <Paper sx={{ height: 450, width: '100%' }} >
-        //                     <DataGrid
-        //                         rows={rowsAll}
-        //                         columns={columnsAll}
-        //                         initialState={{ pagination: { paginationModel } }}
-        //                         pageSizeOptions={[5, 10]}
-        //                         checkboxSelection
-        //                         onRowClick={handleRowClick}
-        //                         sx={{ border: 0 }}
-        //                     />
-        //                 </Paper>
-        //             </div>
-        //         </div>
-
-        //     </div>
-        // </div>
         <div className="container mx-auto p-4 space-y-8">
 
 

@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Briefcase, Code, LockIcon, Mail, MapPin, Phone, Upload, User } from 'lucide-react';
+import { ArrowLeft, Briefcase, Code, LockIcon, Mail, MapPin, Phone, Upload, User } from 'lucide-react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 
 
@@ -19,7 +20,7 @@ const Signup = ({ toggleAuthMode }) => {
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false); // Biến điều khiển hiển thị mật khẩu
   const [notification, setNotification] = useState({ message: '', type: '' }); // Quản lý thông báo
-  
+
 
   const [passwordError, setPasswordError] = useState('')
 
@@ -70,20 +71,20 @@ const Signup = ({ toggleAuthMode }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Tạo dữ liệu từ form
     const formData = { fullname, email, password, address, phone, company, programerposition, selectedSkills, introduce };
-  
+
     try {
       // Gửi yêu cầu đăng ký đến API
       console.log(formData);
       const response = await axios.post('http://localhost:1000/auth/signup', formData);
-      
+
       // Kiểm tra phản hồi từ API
       if (response.data) {
         console.log("Register data:", response.data);
         setNotification({ message: 'Đăng ký thành công!', type: 'success' });
-  
+
         // Chuyển hướng hoặc làm gì đó sau khi đăng ký thành công
         setTimeout(() => {
           toggleAuthMode(); // Tự động quay lại trang đăng nhập sau 5 giây
@@ -92,14 +93,14 @@ const Signup = ({ toggleAuthMode }) => {
     } catch (error) {
       // Kiểm tra lỗi từ Axios
       console.error("Error during registration:", error);
-  
+
       // Kiểm tra lỗi từ phản hồi API nếu có
       if (error.response) {
         const errorData = error.response.data;
-        
+
         if (errorData.error) {
           const errorMessage = errorData.error.message || 'Đăng ký không thành công, vui lòng thử lại';
-          
+
           // Kiểm tra mã lỗi và cập nhật thông báo lỗi tương ứng
           if (errorData.error.code === 'ACCOUNT_ALREADY_EXISTS') {
             setError('email', { type: 'server', message: 'Tài khoản đã tồn tại' });
@@ -116,7 +117,7 @@ const Signup = ({ toggleAuthMode }) => {
       }
     }
   };
-  
+
 
   const handleCloseNotification = () => {
     setNotification({ message: '', type: '' });
@@ -176,8 +177,14 @@ const Signup = ({ toggleAuthMode }) => {
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
     }}>
       <Card className="w-full max-w-4xl bg-white/90 backdrop-blur-md shadow-xl">
+        <div className="absolute top-4 left-4">
+          <Link onClick={() => toggleAuthMode('login')} className="flex items-center text-primary hover:text-primary/80 transition-colors">
+            <ArrowLeft className="mr-2" size={20} />
+            <span>Quay lại đăng nhập</span>
+          </Link>
+        </div>
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-primary">Đăng ký tài khoản người dùng</CardTitle>
+          <CardTitle className="text-3xl text-blue-900 font-bold">Đăng ký tài khoản người dùng</CardTitle>
           <CardDescription className="text-lg">Người dùng nhập thông tin để tiến hành đăng ký tài khoản</CardDescription>
         </CardHeader>
 
@@ -186,7 +193,7 @@ const Signup = ({ toggleAuthMode }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="fullname" className="text-base font-medium w-32 text-left">Tên đầy đủ</Label>
+                  <Label htmlFor="fullname" className="text-base text-blue-900 font-medium w-32 text-left">Tên đầy đủ</Label>
                   <div className="relative mt-1">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
                     <Input id="fullname" name="fullname" value={fullname}
@@ -194,7 +201,7 @@ const Signup = ({ toggleAuthMode }) => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="email" className="text-base font-medium">Email</Label>
+                  <Label htmlFor="email" className="text-base text-blue-900 font-medium">Email</Label>
                   <div className="relative mt-1">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
                     <Input id="email" name="email" type="email" value={email}
@@ -202,7 +209,7 @@ const Signup = ({ toggleAuthMode }) => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="password" className="text-base font-medium">Mật khẩu</Label>
+                  <Label htmlFor="password" className="text-base text-blue-900 font-medium">Mật khẩu</Label>
                   <div className="relative mt-1">
                     <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
                     <Input
@@ -218,12 +225,12 @@ const Signup = ({ toggleAuthMode }) => {
                   {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="address" className="text-base font-medium">Tỉnh/Thành Phố</Label>
+                  <Label htmlFor="address" className="text-base text-blue-900 font-medium">Tỉnh/Thành Phố</Label>
                   <div className="relative mt-1">
                     <MapPin className="absolute left-3 top-3 text-muted-foreground" size={20} />
-                    <Select  value={address} onValueChange={(value) => setAddress(value)} name="address">
-                      <SelectTrigger className="pl-10 h-12 text-lg">
-                        <SelectValue placeholder="Chọn tỉnh/thành phố" />
+                    <Select value={address} onValueChange={(value) => setAddress(value)} name="address">
+                      <SelectTrigger className="pl-10 text-blue-900 h-12 text-lg">
+                        <SelectValue className='text-blue-900' placeholder="Chọn tỉnh/thành phố" />
                       </SelectTrigger>
                       <SelectContent>
                         {vietnameseProvinces.map((province, index) => (
@@ -236,7 +243,7 @@ const Signup = ({ toggleAuthMode }) => {
               </div>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="phone" className="text-base font-medium">Số điện thoại</Label>
+                  <Label htmlFor="phone" className="text-base text-blue-900 font-medium">Số điện thoại</Label>
                   <div className="relative mt-1 flex">
                     <span className="inline-flex items-center px-3 h-12 text-lg text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
                       +84
@@ -255,7 +262,7 @@ const Signup = ({ toggleAuthMode }) => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="company" className="text-base font-medium">Tên công ty</Label>
+                  <Label htmlFor="company" className="text-base text-blue-900 font-medium">Tên công ty</Label>
                   <div className="relative mt-1">
                     <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
                     <Input id="company" name="company" value={company}
@@ -263,7 +270,7 @@ const Signup = ({ toggleAuthMode }) => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="programingposition" className="text-base font-medium">Vị trí lập trình</Label>
+                  <Label htmlFor="programingposition" className="text-base text-blue-900 font-medium">Vị trí lập trình</Label>
                   <div className="relative mt-1">
                     <Code className="absolute left-3 top-3 text-muted-foreground" size={20} />
                     <Select value={programerposition} onValueChange={(value) => setProgramerPosition(value)} name="programingposition">
@@ -279,7 +286,7 @@ const Signup = ({ toggleAuthMode }) => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="avatar" className="text-base font-medium">Ảnh đại diện</Label>
+                  <Label htmlFor="avatar" className="text-base  text-blue-900 font-medium">Ảnh đại diện</Label>
                   <div className="mt-1 flex items-center space-x-4">
                     <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
                       {avatar ? (
@@ -288,8 +295,8 @@ const Signup = ({ toggleAuthMode }) => {
                         <User className="text-gray-400" size={40} />
                       )}
                     </div>
-                    <label htmlFor="avatar-upload" className="cursor-pointer bg-white text-primary hover:bg-primary hover:text-white transition-colors duration-200 py-2 px-4 rounded-md border border-primary flex items-center">
-                      <Upload className="mr-2" size={20} />
+                    <label htmlFor="avatar-upload" className="cursor-pointer text-blue-900 bg-white text-primary hover:bg-primary hover:text-white transition-colors duration-200 py-2 px-4 rounded-md border border-primary flex items-center">
+                      <Upload className="mr-2 text-blue-900" size={20} />
                       Chọn ảnh đại diện
                     </label>
                     <input
@@ -304,7 +311,7 @@ const Signup = ({ toggleAuthMode }) => {
               </div>
             </div>
             <div>
-              <Label className="text-base font-medium">Khả năng lập trình</Label>
+              <Label className="text-base text-blue-900 font-medium">Khả năng lập trình</Label>
               <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3">
                 {skillOptions.map((skill) => (
                   <div key={skill} className="flex items-center space-x-2">
@@ -324,11 +331,11 @@ const Signup = ({ toggleAuthMode }) => {
               </div>
             </div>
             <div>
-              <Label htmlFor="introduce"  className="text-base font-medium">Giới thiệu bản thân</Label>
+              <Label htmlFor="introduce" className="text-base text-blue-900 font-medium">Giới thiệu bản thân</Label>
               <Textarea id="introduce" name="introduce" value={introduce}
-                      onChange={(e) => setIntroduce(e.target.value)} placeholder="Nói về một số ưu, nhược điểm và thành tựu đã đạt được" className="mt-1 h-32 text-lg" />
+                onChange={(e) => setIntroduce(e.target.value)} placeholder="Nói về một số ưu, nhược điểm và thành tựu đã đạt được" className="mt-1 h-32 text-lg" />
             </div>
-            <Button type="submit" className="w-full h-12 text-lg">
+            <Button type="submit" className="w-full h-12 bg-blue-900  text-lg">
               Tạo tài khoản
             </Button>
           </form>

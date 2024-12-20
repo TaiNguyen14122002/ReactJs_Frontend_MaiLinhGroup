@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { storage } from '../../../Firebase/FirebaseConfig';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
-import { Building2, Calendar, Code, Edit, Mail, MapPin, Pencil, Phone, Upload } from 'lucide-react'
+import { Building2, Calendar, Code, Edit, EyeIcon, EyeOffIcon, Mail, MapPin, Pencil, Phone, Upload } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
@@ -224,17 +224,17 @@ const Setting = () => {
     useEffect(() => {
         fetchFileUser();
     }, []
-    // [token, handleImageUpload]
-)
+        // [token, handleImageUpload]
+    )
 
     const handleInputChange = (e) => {
         // const { name, value } = e.target;
         // setPersonalInfo(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSave = async() => {
-        try{
-            if(!token){
+    const handleSave = async () => {
+        try {
+            if (!token) {
                 console.log("Phiên đăng nhập đã hết hạn")
             }
             const requestBody = {
@@ -249,16 +249,16 @@ const Setting = () => {
             }
 
             const response = await axios.put(`http://localhost:1000/api/users/updateUser`,
-            requestBody, {
+                requestBody, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             })
             console.log("Done")
             setUser(response.data);
-            
 
-        }catch(error){
+
+        } catch (error) {
             console.log("Cõ lỗi xảy ra tỏng quá trình thực hiện dữ liệu", error)
         }
         console.log(introduce)
@@ -275,30 +275,102 @@ const Setting = () => {
     const [selectedSkills, setSelectedSkills] = useState(auth.user?.selectedSkills || "")
 
 
-    const handleInputFullName = (e) => { 
+    const handleInputFullName = (e) => {
         setFullname(e.target.value);
     };
-    const handleInputEmail = (e) => { 
+    const handleInputEmail = (e) => {
         setEmail(e.target.value);
     };
-    const handleInputAddress = (e) => { 
+    const handleInputAddress = (e) => {
         setAddress(e.target.value);
     };
-    const handleInputPhone = (e) => { 
+    const handleInputPhone = (e) => {
         setPhone(e.target.value);
     };
-    const handleInputCompany = (e) => { 
+    const handleInputCompany = (e) => {
         setCompany(e.target.value);
     };
-    const handleInputProgramerPosition = (e) => { 
+    const handleInputProgramerPosition = (e) => {
         setProgramerPosition(e.target.value);
     };
-    const handleInputIntroduce = (e) => { 
+    const handleInputIntroduce = (e) => {
         serIntroduce(e.target.value);
     };
-    const handleInputSelectedSkills = (e) => { 
+    const handleInputSelectedSkills = (e) => {
         setSelectedSkills(e.target.value);
     };
+
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newpassword, setNewPassword] = useState('')
+
+    const handleChangePassword = async () => {
+        
+        if (!token) {
+            setMessage("Phiên đăng nhập đã hết hạn.");
+            return;
+        }
+
+        try {
+            const response = await axios.put(
+                `http://localhost:1000/api/users/changePassword`,
+                null, // Không có body
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}` // JWT token
+                    },
+                    params: {
+                        currentPassword: currentPassword,
+                        newPassword: newpassword
+                    }
+                }
+            );
+
+            // Hiển thị thông báo thành công
+            toast.success(
+                <div>
+                    <h2>Thông báo thành công</h2>
+                    <p>{response.data.message || "Đổi mật khẩu thành công."}</p>
+                </div>, 
+                {
+                    position: "top-right", // Vị trí của toast
+                    autoClose: 5000, // Thời gian tự đóng (ms)
+                    hideProgressBar: false, // Hiển thị thanh tiến độ
+                    closeOnClick: true, // Cho phép đóng khi click vào toast
+                }
+            );
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.message) {
+                // Lấy thông báo lỗi từ phản hồi của backend
+                toast.error(
+                    <div>
+                        <h2>Thông báo</h2>
+                        <p>{error.response.data.message}</p>
+                    </div>, 
+                    {
+                        position: "top-right", // Vị trí của toast
+                        autoClose: 5000, // Thời gian tự đóng (ms)
+                        hideProgressBar: false, // Hiển thị thanh tiến độ
+                        closeOnClick: true, // Cho phép đóng khi click vào toast
+                    }
+                );
+                
+            } else {
+                console.log("Có lỗi xảy ra, vui lòng thử lại.");
+            }
+        }
+    };
+
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
+
+    const toggleCurrentPasswordVisibility = () => {
+        setShowCurrentPassword(!showCurrentPassword)
+    }
+
+    const toggleNewPasswordVisibility = () => {
+        setShowNewPassword(!showNewPassword)
+    }
+
 
     return (
         <div className="flex h-screen bg-background text-foreground">
@@ -419,7 +491,7 @@ const Setting = () => {
                                             name="introduce"
                                             value={introduce}
                                             onChange={handleInputIntroduce}
-                                           
+
                                         />
                                     </div>
                                 </form>
@@ -531,11 +603,55 @@ const Setting = () => {
                                         <h3 className="text-lg font-medium">{t.security}</h3>
                                         <div className="grid gap-2">
                                             <Label htmlFor="current-password">{t.currentPassword}</Label>
-                                            <Input id="current-password" type="password" />
+                                            <div className="relative">
+                                                <Input
+                                                    id="current-password"
+                                                    type={showCurrentPassword ? "text" : "password"}
+                                                    value={currentPassword}
+                                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                                    onClick={toggleCurrentPasswordVisibility}
+                                                    aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+                                                >
+                                                    {showCurrentPassword ? (
+                                                        <EyeIcon className="h-4 w-4" />
+                                                    ) : (
+                                                        <EyeOffIcon className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+
+                                            </div>
+
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="new-password">{t.newPassword}</Label>
-                                            <Input id="new-password" type="password" />
+                                            <div className="relative">
+                                                <Input
+                                                    id="new-password"
+                                                    type={showNewPassword ? "text" : "password"}
+                                                    value={newpassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                                    onClick={toggleNewPasswordVisibility}
+                                                    aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                                                >
+                                                    {showNewPassword ? (
+                                                        <EyeOffIcon className="h-4 w-4" />
+                                                    ) : (
+                                                        <EyeIcon className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <Switch id="two-factor" />
@@ -579,7 +695,7 @@ const Setting = () => {
                     </div> */}
                                     </div>
 
-                                    <Button>{t.saveChanges}</Button>
+                                    <Button onClick={handleChangePassword}>{t.saveChanges}</Button>
                                 </CardContent>
                             </Card>
                         </TabsContent>

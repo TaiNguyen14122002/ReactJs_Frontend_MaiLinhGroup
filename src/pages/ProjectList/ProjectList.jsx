@@ -117,7 +117,7 @@ const ProjectList = () => {
                             onChange={handSearchChange}
                             className="flex-1"
                         />
-                        <Button className="bg-black text-white hover:bg-black/90">Search</Button>
+                        <Button className="bg-blue-600 text-white hover:bg-black/90">Tìm kiếm</Button>
                     </div>
                 </div>
 

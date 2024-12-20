@@ -7,10 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { LoadingPopup } from "../Performance/LoadingPopup";
 
 const Subscription = () => {
 
   const navigate = useNavigate();
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const token = localStorage.getItem('jwt');
   // const tasks = [
@@ -24,6 +27,7 @@ const Subscription = () => {
   const [tasks, setTasks] = useState([]);
 
   const fetchIssueByUser = async () => {
+    setIsOpen(true)
     try {
       const response = await axios.get(`http://localhost:1000/api/issues/users/issues`, {
         headers: {
@@ -32,12 +36,14 @@ const Subscription = () => {
       });
       console.log("Dữ liệu tác vụ", response.data);
       setTasks(response.data)
+      setIsOpen(false)
     } catch (error) {
       console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error)
     }
   }
 
   useEffect(() => {
+    setIsOpen(true);
     fetchIssueByUser()
   }, [token])
 
@@ -63,7 +69,7 @@ const Subscription = () => {
           </TableHeader>
           <TableBody>
             {tasks.map((task) => (
-              <TableRow key={task.id} onClick = {()=> navigate(`/project/${task.projectId}/issue/${task.id}`)} style={{ cursor: 'pointer' }}>
+              <TableRow key={task.id} onClick={() => navigate(`/project/${task.projectId}/issue/${task.id}`)} style={{ cursor: 'pointer' }}>
                 <TableCell className="font-medium">{task.id}</TableCell>
                 <TableCell>{task.title}</TableCell>
                 <TableCell>
@@ -118,6 +124,7 @@ const Subscription = () => {
             ))}
           </TableBody>
         </Table>
+        <LoadingPopup isOpen={isOpen}/>
       </Card>
     </main>
 

@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { LoadingPopup } from '@/pages/Performance/LoadingPopup';
 
 
 Chart.register(...registerables); // Đăng ký các thành phần cần thiết
@@ -29,9 +31,12 @@ const CountProjectByUser = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [error, setError] = useState('');
 
+    const[isOpen, setIsopen] = useState(false);
+
     const token = localStorage.getItem('jwt');
 
     const fetchProjectOwned = async () => {
+        setIsopen(true)
         if (!token) {
             console.log("Bạn chưa đăng nhập")
         }
@@ -44,10 +49,13 @@ const CountProjectByUser = () => {
                 });
                 console.log("Dữ liệu mockProjects", response.data)
                 setMockProjects(response.data);
+                setIsopen(false);
 
 
             } catch (error) {
                 console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error);
+            }finally{
+                
             }
         }
     }
@@ -55,6 +63,7 @@ const CountProjectByUser = () => {
     const [selectedProjectId, setSelectedProjectId] = useState('');
 
     const fetchAllByProject = async () => {
+        setIsopen(true)
         if (!token) {
             console.log("Bạn chưa đăng nhập")
         }
@@ -67,8 +76,11 @@ const CountProjectByUser = () => {
                 });
                 console.log("Dữ liệu mockIssues", response.data)
                 setMockIssues(response.data)
+                setIsopen(false)
             } catch (error) {
                 console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error);
+            }finally{
+                
             }
         }
     }
@@ -78,6 +90,7 @@ const CountProjectByUser = () => {
 
     useEffect(() => {
         // In a real application, you would fetch data from an API here
+        setIsopen(true);
         fetchProjectOwned();
         fetchAllByProject();
         setIssues(mockIssues)
@@ -108,6 +121,7 @@ const CountProjectByUser = () => {
                 </div>
             );
         } else {
+            setIsopen(true)
             try {
                 const response = await axios.get(`http://localhost:1000/api/issues/api/export/issues/${selectedProjectId}`, {
                     headers: {
@@ -125,6 +139,7 @@ const CountProjectByUser = () => {
                 link.remove();
                 window.URL.revokeObjectURL(url);
                 console.log("Done")
+                setIsopen(false)
 
             } catch (error) {
                 console.log("Có lỗi xảy ra trong quá trình thực hiển dữ liệu", error)
@@ -196,6 +211,12 @@ const CountProjectByUser = () => {
         setFileName(null)
     }
 
+    const [searchTerm, setSearchTerm] = useState('')
+
+    const filteredProjects = mockProjects.filter((project) =>
+        project.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
 
 
     return (
@@ -222,9 +243,9 @@ const CountProjectByUser = () => {
                         <TableBody>
                             {mockProjects.map((project) => {
                                 const projectIssues = mockIssues.filter(issue => issue.projectId === project.id)
-                                const todoCount = projectIssues.filter(issue => issue.status === "pending").length
-                                const inProgressCount = projectIssues.filter(issue => issue.status === "In_Progress").length
-                                const doneCount = projectIssues.filter(issue => issue.status === "done").length
+                                const todoCount = projectIssues.filter(issue => issue.status === "Chưa làm").length
+                                const inProgressCount = projectIssues.filter(issue => issue.status === "Đang làm").length
+                                const doneCount = projectIssues.filter(issue => issue.status === "Hoàn thành").length
                                 const totalCount = projectIssues.length
 
                                 return (
@@ -254,13 +275,31 @@ const CountProjectByUser = () => {
                             Tổng hoa hồng: {formatCurrency(totalCommission)}
                         </div> */}
                                 <Select onValueChange={setSelectedProjectId}>
-                                    <SelectTrigger className="w-[180px]">
+                                    <SelectTrigger className="w-[320px] mt-5">
                                         <SelectValue placeholder="Lọc theo trạng thái" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {mockProjects?.map((item) => (
+                                        {/* {mockProjects?.map((item) => (
                                             <SelectItem value={item.id.toString()} key={item.id}>{item.name}</SelectItem>
-                                        ))}
+                                        ))} */}
+
+                                        <div className="p-2">
+                                            <Input
+                                                placeholder="Tìm kiếm..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="mb-2"
+                                            />
+                                        </div>
+                                        {filteredProjects.length > 0 ? (
+                                            filteredProjects.map((item) => (
+                                                <SelectItem value={item.id.toString()} key={item.id}>
+                                                    {item.name}
+                                                </SelectItem>
+                                            ))
+                                        ) : (
+                                            <div className="p-2 text-center text-gray-500">Không có kết quả</div>
+                                        )}
 
                                     </SelectContent>
                                 </Select>
@@ -340,7 +379,7 @@ const CountProjectByUser = () => {
                         <TableCaption>Danh sách các vấn đề trong dự án</TableCaption>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[50px]">ID</TableHead>
+                                {/* <TableHead className="w-[50px]">ID</TableHead> */}
                                 <TableHead>Tiêu đề</TableHead>
                                 <TableHead>Mức độ hoàn thành</TableHead>
                                 <TableHead>Độ ưu tiên</TableHead>
@@ -356,7 +395,7 @@ const CountProjectByUser = () => {
                         <TableBody>
                             {mockIssues?.map((issue) => (
                                 <TableRow key={issue.id}>
-                                    <TableCell className="font-medium">{issue.id}</TableCell>
+                                    {/* <TableCell className="font-medium">{issue.id}</TableCell> */}
                                     <TableCell>{issue.title}</TableCell>
                                     <TableCell>
                                         <Badge variant={
@@ -412,6 +451,7 @@ const CountProjectByUser = () => {
                         </TableBody>
                     </Table>
                 </CardContent>
+                <LoadingPopup isOpen={isOpen}/>
             </Card>
         </div>
 

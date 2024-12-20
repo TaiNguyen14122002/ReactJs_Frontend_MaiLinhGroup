@@ -6,16 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import axios from 'axios';
 import { differenceInDays, format, parseISO } from 'date-fns';
-import { ArrowDown, ArrowUp, ArrowUpDown, CalendarArrowDown, CalendarCheck, Clock, DollarSign, Search, User } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarArrowDown, CalendarCheck, Clock, DollarSign, InboxIcon, Search, User } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react'
 import { vi } from 'date-fns/locale'
 import { useNavigate } from 'react-router-dom';
+import { LoadingPopup } from '../Performance/LoadingPopup';
 
 const IssueExpiring = () => {
     const token = localStorage.getItem('jwt');
     const [issueExpiring, setIssueExpiring] = useState([]);
 
+    const[isOpen, setIsOpen] = useState(false)
+
     const fetchIssueExpiring = async () => {
+        setIsOpen(true)
         try {
             if (!token) {
                 console.log("Phiên đăng nhập đã hết hạn")
@@ -27,6 +31,7 @@ const IssueExpiring = () => {
             })
             console.log("Dữ liệu", response.data)
             setIssueExpiring(response.data)
+            setIsOpen(false)
 
         } catch (error) {
             console.log("Có lỗi xảy ra trong quá trình thực hiện dữ liệu", error)
@@ -34,6 +39,7 @@ const IssueExpiring = () => {
     }
 
     useEffect(() => {
+        setIsOpen(true)
         fetchIssueExpiring();
     }, [token])
 
@@ -199,54 +205,64 @@ const IssueExpiring = () => {
                         </TableHeader>
 
                         <TableBody>
-                            {filteredAndSortedTasks.map((task) => (
-                                <TableRow key={task.id} className="hover:bg-gray-50 transition-colors" onClick={() => handleRowClick(task.id, task.projectID)} style={{ cursor: 'pointer' }}>
-                                    <TableCell className="font-medium">{task.title}</TableCell>
-                                    <TableCell className="max-w-xs truncate">{task.description}</TableCell>
-                                    <TableCell>
-                                        <Badge className={`${priorityColors[task.priority]} px-2 py-1 rounded-full text-xs font-semibold`}>
-                                            {getPriorityDisplay(task.priority)}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge className={`${statusColors[task.status]} px-2 py-1 rounded-full text-xs font-semibold`}>
-                                            {task.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <Clock className="mr-2 h-4 w-4 text-gray-400" />
-                                            {getDaysLeft(task.dueDate)} ngày
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <CalendarCheck className="mr-2 h-4 w-4 text-gray-400" />
-                                            {formatDate(task.dueDate)}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap">
-                                        <div className="flex items-center">
+                            {filteredAndSortedTasks.length > 0 ? (
+                                filteredAndSortedTasks.map((task) => (
+                                    <TableRow key={task.id} className="hover:bg-gray-50 transition-colors" onClick={() => handleRowClick(task.id, task.projectID)} style={{ cursor: 'pointer' }}>
+                                        <TableCell className="font-medium">{task.title}</TableCell>
+                                        <TableCell className="max-w-xs truncate">{task.description}</TableCell>
+                                        <TableCell>
+                                            <Badge className={`${priorityColors[task.priority]} px-2 py-1 rounded-full text-xs font-semibold`}>
+                                                {getPriorityDisplay(task.priority)}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge className={`${statusColors[task.status]} px-2 py-1 rounded-full text-xs font-semibold`}>
+                                                {task.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <Clock className="mr-2 h-4 w-4 text-gray-400" />
+                                                {getDaysLeft(task.dueDate)} ngày
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <CalendarCheck className="mr-2 h-4 w-4 text-gray-400" />
+                                                {formatDate(task.dueDate)}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <div className="flex items-center">
 
-                                            {formatCurrency(task.price)}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center">
-                                            <User className="mr-2 h-4 w-4 text-gray-400" />
-                                            {task.assignee.fullname}
+                                                {formatCurrency(task.price)}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center">
+                                                <User className="mr-2 h-4 w-4 text-gray-400" />
+                                                {task.assignee.fullname}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={8} className="text-center py-4">
+                                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                            <InboxIcon className="h-8 w-8 mb-2" />
+                                            <p>Không có dữ liệu</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )
+                            }
 
                         </TableBody>
-
                     </Table>
-
                 </div>
-
             </CardContent>
+            <LoadingPopup isOpen={isOpen}/>
 
         </Card>
     )

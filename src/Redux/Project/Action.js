@@ -86,7 +86,7 @@ export const acceptInvitation = ({token, navigate}) => async(dispatch) => {
                 token
             }
         })
-        navigate("/project" + data.projectId)
+        navigate("/project/" + data.projectId)
         console.log("accept invitation", data)
         dispatch({type: ACCEPT_INVITATION_SUCCESS, payload: data})
     } catch (error) {

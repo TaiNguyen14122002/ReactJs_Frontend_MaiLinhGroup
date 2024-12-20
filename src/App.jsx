@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUser, logout } from './Redux/Auth/Action';
 import { fetchProjects } from './Redux/Project/Action';
@@ -45,8 +45,12 @@ import MemberInformation from './pages/ExportPDF/MemberInformation';
 import PDFMenberInformation from './pages/ExportPDF/PDFMenberInformation';
 import IssueExpiring from './pages/IssueList/IssueExpiring';
 import IssueExpired from './pages/IssueList/IssueExpired';
+import ProjectPerformanceDashboard from './pages/Performance/ProjectPerformanceDashboard';
 import axios from 'axios';
 import { formatInTimeZone } from 'date-fns-tz';
+import { Checkbox } from './components/ui/checkbox';
+import ForgetPassword from './pages/Auth/ForgetPassword';
+import ResetPassword from './pages/Auth/Resetpassword';
 
 function App() {
   const dispatch = useDispatch();
@@ -73,24 +77,54 @@ function App() {
 
   const unreadCount = notifications.notifications?.filter(n => !n.read).length
 
-  const markAsRead = (id) => {
-    setNotifications(notifications.map(n =>
-      n.id === id ? { ...n, read: true } : n
-    ))
-  }
+  const markAsRead = async (id) => {
+    console.log("Thông báo", id);
+    try {
+      // Gửi yêu cầu PUT để đánh dấu thông báo là đã đọc
+      const response = await axios.put(
+        `http://localhost:1000/api/notification/${id}/read`,
+        {}, // Gửi body trống (hoặc dữ liệu cần thiết)
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      console.log("Đã đọc thông báo", response.data);
+
+      // Lấy lại danh sách thông báo từ server
+      const notificationsResponse = await axios.get('http://localhost:1000/api/notification/notificationanduser', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      // Cập nhật lại danh sách thông báo
+      setNotifications(notificationsResponse.data);
+
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+    }
+  };
+
+
 
   const formatDate = (timestamp) => {
-    // Định dạng theo múi giờ Việt Nam
+    if (!timestamp || isNaN(new Date(timestamp))) {
+      console.error('Invalid timestamp:', timestamp);
+      return ''; // Hoặc một giá trị mặc định nào đó
+    }
     const timeZone = 'Asia/Ho_Chi_Minh';
     const date = new Date(timestamp);
     return formatInTimeZone(date, timeZone, 'yyyy-MM-dd HH:mm:ss');
   };
 
+
   const [activeTab, setActiveTab] = useState(null);
   const handleActiTab = (activitiTab) => {
     console.log("Lựa chọn", activitiTab)
     setActiveTab(activitiTab);
-   
+
   }
   const navigate = useNavigate();
   const [activeButton, setActiveButton] = useState(null);
@@ -98,63 +132,76 @@ function App() {
   const handleButtonClick = (route) => {
     navigate(route);
     setActiveButton(route); // Cập nhật nút đang hoạt động
-};
+  };
 
-const toggleNavbarVisibility = () => {
-  setIsNavbarVisible(prevState => !prevState);
-};
+  const toggleNavbarVisibility = () => {
+    setIsNavbarVisible(prevState => !prevState);
+  };
 
 
 
-const fetchNotification = async() => {
-  try{
-    if(!token){
-      console.log("Phiên đăng nhập đã hết hạn")
-    }
-    const response = await axios.get(`http://localhost:1000/api/notification/notificationanduser`, {
-      headers: {
-        Authorization : `Bearer ${token}`
+  const fetchNotification = async () => {
+    try {
+      if (!token) {
+        console.log("Phiên đăng nhập đã hết hạn")
       }
-    })
-    console.log("Dữ liệu thông báo", response.data)
-    setNotifications(response.data)
+      const response = await axios.get(`http://localhost:1000/api/notification/notificationanduser`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      console.log("Dữ liệu thông báo", response.data)
+      setNotifications(response.data)
 
-  }catch(error){
-    console.log("Có lỗi xảy ra trong quá tình tải dữ liệu", error)
+    } catch (error) {
+      console.log("Có lỗi xảy ra trong quá tình tải dữ liệu", error)
+    }
   }
-}
 
-useEffect(() => {
-  fetchNotification()
-}, [token])
+  useEffect(() => {
+    fetchNotification()
+  }, [token])
 
-const [avaterUser, setAvaterUser] = useState([])
+  const [avaterUser, setAvaterUser] = useState([])
 
-const fetchFileUser = async() => {
-  try{
-      if(!token){
-          console.log("Phiên đăng nhập đã hết hạn")
+  const fetchFileUser = async () => {
+    try {
+      if (!token) {
+        console.log("Phiên đăng nhập đã hết hạn")
       }
       const response = await axios.get(`http://localhost:1000/api/file-info/user`, {
-          headers: {
-              Authorization: `Bearer ${token}`
-          }
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       console.log("Avater", response.data)
       setAvaterUser(response.data)
 
-  }catch(error){
+    } catch (error) {
       console.log("Có lỗi xẩy ra trong quá trình thực hiện dữ liệu", error)
+    }
   }
-}
 
-useEffect(() => {
-  fetchFileUser();
-}, [token])
+  useEffect(() => {
+    fetchFileUser();
+  }, [token])
 
+  const [showOnlyUnread, setShowOnlyUnread] = useState(false);
 
+  const filteredNotifications = useMemo(() => {
+    return showOnlyUnread
+      ? notifications.notifications.filter(notification => !notification.read)
+      : notifications.notifications;
+  }, [notifications, showOnlyUnread]);
 
-
+  const sortedNotifications = useMemo(() => {
+    if (!Array.isArray(filteredNotifications)) {
+      return []; // Trả về mảng rỗng nếu filteredNotifications không phải là mảng
+    }
+  
+    return filteredNotifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [filteredNotifications]);
+  
 
   return (
     <>
@@ -198,16 +245,37 @@ useEffect(() => {
                   </PopoverTrigger>
                   <PopoverContent className="w-80 max-h-[600px] overflow-y-auto">
                     <div className="grid gap-4">
-                      <h3 className="font-semibold">Thông báo</h3>
-                      {notifications.notifications?.length === 0 ? (
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold">Thông báo</h3>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="show-unread"
+                            checked={showOnlyUnread}
+                            onCheckedChange={(checked) => setShowOnlyUnread(checked)}
+                          />
+                          <label
+                            htmlFor="show-unread"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            Chỉ hiển thị chưa đọc
+                          </label>
+                        </div>
+                      </div>
+                      {sortedNotifications.length === 0 ? (
                         <p className="text-sm text-muted-foreground">Không có thông báo.</p>
                       ) : (
-                        notifications.notifications?.map((notification) => (
-                          <div key={notification.id} className={`flex items-start gap-4 p-2 rounded-md ${notification.read ? 'bg-background' : 'bg-muted'}`}>
+                        sortedNotifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={`flex items-start gap-4 p-2 rounded-md ${notification.read ? 'bg-background' : 'bg-muted'
+                              }`}
+                          >
                             <Bell className="mt-1 h-5 w-5" />
                             <div className="grid gap-1 flex-1">
                               <p className="text-sm">{notification.content}</p>
-                              <p className="text-xs text-muted-foreground">{formatDate(notification.timestamp)}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(notification.timestamp)}
+                              </p>
                               {!notification.read && (
                                 <Button
                                   variant="ghost"
@@ -269,12 +337,7 @@ useEffect(() => {
                             Tổng quan
                           </Button>
                         </DropdownMenuItem>
-                        {/* <DropdownMenuItem className="hover:bg-zinc-800">
-                          <Button variant="ghost" className="w-full justify-start" onClick={() => handleActiTab("settings")}>
-                            <Settings className="mr-2 h-4 w-4" />
-                            Cài đặt
-                          </Button>
-                        </DropdownMenuItem> */}
+                      
                         <DropdownMenuItem className="hover:bg-zinc-800" onClick={handleLogout}>
                           <Button variant="ghost" className="w-full justify-start text-red-500 mt-auto">
                             <LogOut className="mr-2 h-4 w-4" />
@@ -305,15 +368,17 @@ useEffect(() => {
                       <Route path='/project/expired' element={<ProjectExpired />} />
                       <Route path='/project/deleted' element={<ProjectDeleted />} />
                       <Route path='/project/calender' element={<Calender />} />
-                      <Route path='/user/information' element={<Setting/>}/>
-                      <Route path='/project/statistical' element={<ProjectSpending/>}/>
-                      <Route path='/project/PDF/Information/:projectId' element={<PDFExport/>}/>
-                      <Route path='/project/members' element={<MemberInformation/>}/>
-                      <Route path='/members/PDF/project/:projectId/issue/:issueId' element={<PDFMenberInformation/>}/>
-                      <Route path='/issues/expiring' element={<IssueExpiring/>}/>
-                      <Route path='/issues/expired' element={<IssueExpired/>}/>
-                      
-                    </Routes>  
+                      <Route path='/user/information' element={<Setting />} />
+                      <Route path='/project/statistical' element={<ProjectSpending />} />
+                      <Route path='/project/PDF/Information/:projectId' element={<PDFExport />} />
+                      <Route path='/project/members' element={<MemberInformation />} />
+                      <Route path='/members/PDF/project/:projectId/issue/:issueId' element={<PDFMenberInformation />} />
+                      <Route path='/issues/expiring' element={<IssueExpiring />} />
+                      <Route path='/issues/expired' element={<IssueExpired />} />
+                      <Route path='/project/performance' element={<ProjectPerformanceDashboard />} />
+                      <Route path='/forgetpassword' element={<ForgetPassword />} />
+                      <Route path="/resetPassword" element={<ResetPassword />} />
+                    </Routes>
                   </div>
                 </div>
               </main>

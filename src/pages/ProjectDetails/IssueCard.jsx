@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -7,7 +7,7 @@ import UserList from "./UserList"
 import { useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
 import { deleteIssue } from "@/Redux/Issue/Action"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import axios from "axios"
 
 
@@ -21,25 +21,45 @@ const IssueCard = ({ item, projectId }) => {
     ]
 
     const [projectTabs, setProjectTabs] = useState([]);
+    const [avatar, setAvatar] = useState([]);
 
-    const fetchProjectTabs = async () => {
+    // Sử dụng useCallback để đảm bảo callback không bị tạo lại mỗi lần render
+    const fetchProjectTabs = useCallback(async () => {
         try {
             const response = await axios.get(`http://localhost:1000/api/taskCategories/project/${projectId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            console.log("Tabdfsfwedscfsfwes Project", response.data)
             setProjectTabs(response.data);
-
         } catch (error) {
             console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
         }
+    }, [projectId, token]);
+
+    const fetchAvater = useCallback(async() => {
+        try{
+            const response = await axios.get(`http://localhost:1000/api/file-info/UserAssigner/${item.assignee.id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            setAvatar(response.data)
+        } catch(error) {
+            console.log("Có lỗi xảy ra trong quá trình thực hiện", error)
+        }
+    }, [token]);
+
+    // Hàm callback để cập nhật dữ liệu trong state
+    const handleUpdate = () => {
+        fetchProjectTabs();
+        fetchAvater();
     }
+
     useEffect(() => {
         fetchProjectTabs();
-    }, [token])
-
+        fetchAvater();
+    }, [fetchProjectTabs, fetchAvater]); // Dùng useEffect để gọi các hàm fetch khi token hoặc projectId thay đổi
 
     return (
         <Card className="rounded-md py-1 pb-2">
@@ -76,6 +96,7 @@ const IssueCard = ({ item, projectId }) => {
                         <DropdownMenuTrigger>
                             <Button size="icon" className="bg-gray-900 hover:text-black text-white rounded-full">
                                 <Avatar>
+                                    <AvatarImage src={avatar[0]?.fileName} />
                                     <AvatarFallback>
                                         <PersonIcon />
                                     </AvatarFallback>
@@ -84,18 +105,16 @@ const IssueCard = ({ item, projectId }) => {
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent>
-                            <UserList issueDetails={item} />
+                            {/* Truyền callback handleUpdate vào UserList */}
+                            <UserList issueDetails={item} onUpdate={handleUpdate} />
                         </DropdownMenuContent>
 
                     </DropdownMenu>
 
                 </div>
             </CardContent>
-
-
-
         </Card>
     )
 }
 
-export default IssueCard
+export default IssueCard;

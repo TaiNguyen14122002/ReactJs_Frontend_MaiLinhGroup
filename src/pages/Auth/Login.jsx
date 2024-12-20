@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { login } from '@/Redux/Auth/Action';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function LoginForm({ toggleAuthMode }) {
   const dispatch = useDispatch();
@@ -28,10 +29,10 @@ export default function LoginForm({ toggleAuthMode }) {
   const onSubmit = async (data) => {
     try {
       const response = await dispatch(login(data)); // Sử dụng await để chờ kết quả
-  
+
       if (response.error) {
         const errorMessage = response.error.message || 'Đăng nhập không thành công, vui lòng thử lại!';
-        
+
         // Kiểm tra mã lỗi
         if (response.error.code === 'USER_NOT_FOUND') {
           setError('email', { type: 'server', message: 'Tài khoản không tồn tại' });
@@ -51,23 +52,28 @@ export default function LoginForm({ toggleAuthMode }) {
       setError('password', { type: 'server', message: 'Có lỗi xảy ra, vui lòng thử lại!' });
     }
   };
-  
-  
+
+  const handleForgetPassword = () => {
+    navigate('/forgetpassword')
+    toast.success("Giao diện quên mật khảu chưa làm ")
+  }
+
+
 
   return (
-    
+
     <div className="h-screen flex justify-center px-5 lg:px-0">
       <div className="w-full bg-white border shadow sm:rounded-lg flex justify-center flex-1">
         <div className="flex-1  text-center hidden md:flex">
-          
+
           <div
             className="m-12 xl:m-16 w-full bg-contain bg-center bg-no-repeat"
             style={{
               backgroundImage: `url(https://assets.plan.io/images/blog/what-is-task-management.png)`,
             }}
-          > 
-          {/* <h1 className=" mt-20 text-2xl xl:text-4xl font-extrabold text-blue-900">HỆ THỐNG QUẢN LÝ DỰ ÁN</h1> */}
-           </div>
+          >
+            {/* <h1 className=" mt-20 text-2xl xl:text-4xl font-extrabold text-blue-900">HỆ THỐNG QUẢN LÝ DỰ ÁN</h1> */}
+          </div>
         </div>
         <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12 flex flex-col items-center justify-center">
           <div className="flex flex-col items-center">
@@ -110,18 +116,28 @@ export default function LoginForm({ toggleAuthMode }) {
                   {errors.password && <p className="absolute mt-1 text-red-500 text-xs">{errors.password.message}</p>}
                 </div>
 
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    className="text-sm text-blue-600 hover:underline cursor-pointer"
+                    onClick={() => toggleAuthMode('forgetPassword')}
+                  >
+                    Quên mật khẩu?
+                  </button>
+                </div>
+
                 {/* {error && <p className="mt-2 text-red-500 text-xs">{error}</p>} */}
 
                 <button
                   type="submit"
                   className="mt-5 tracking-wide font-semibold bg-blue-900 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none"
                 >
-                  <span className="ml-3">Đăng nhập</span>
+                  <span className="ml-3 text-white">Đăng nhập</span>
                 </button>
 
                 <div className="mt-6 text-xs text-gray-600 text-center">
                   Chưa có tài khoản?{' '}
-                  <Button variant="ghost" onClick={toggleAuthMode}>
+                  <Button variant="ghost" onClick={() => toggleAuthMode('signup')}>
                     Đăng ký
                   </Button>
                 </div>
@@ -130,6 +146,7 @@ export default function LoginForm({ toggleAuthMode }) {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 }

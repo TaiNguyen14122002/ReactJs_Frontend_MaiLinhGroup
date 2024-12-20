@@ -45,6 +45,7 @@ const IssueDetails = () => {
 
   const handleUpdateIssueStatus = (status) => {
     dispatch(updateIssueStatus({ status, id: issueId }))
+    // dispatch(fetchIssueById({id: issueId}));
     toast.success(
       <div>
         <strong>Trạng thái đã được cập nhật</strong>
@@ -681,9 +682,6 @@ const IssueDetails = () => {
                       {tab.label}
                     </SelectItem>
                   ))}
-                  {/* <SelectItem value="pending">Chưa làm</SelectItem>
-                  <SelectItem value="in_progress">Đang hoàn thàh</SelectItem>
-                  <SelectItem value="done">Đã hoàn thành</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>

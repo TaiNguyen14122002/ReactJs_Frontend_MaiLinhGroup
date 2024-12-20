@@ -2,17 +2,21 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import axios from 'axios'
-import { Download } from 'lucide-react'
+import { Download, InboxIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { LoadingPopup } from '../Performance/LoadingPopup'
 
 const ProjectSpending = () => {
     const token = localStorage.getItem('jwt')
     const [projectspending, setProjectSpending] = useState([]);
 
+    const[isOpen, setIsOpen] = useState(false)
+
     const navigate = useNavigate();
 
     const fetchProjectSpending = async () => {
+        setIsOpen(true)
         try {
             if (!token) {
                 console.log("Phiên đăng nhập đã kết thúc")
@@ -24,12 +28,14 @@ const ProjectSpending = () => {
             });
             console.log("Chi tiêu dự án", response.data);
             setProjectSpending(response.data)
+            setIsOpen(false)
         } catch (error) {
             console.log("Có lỗi xảy ra trong quá trình thực hiện dữ liệu", error)
         }
     }
 
     useEffect(() => {
+        setIsOpen(true)
         fetchProjectSpending();
     }, [token])
 
@@ -48,7 +54,7 @@ const ProjectSpending = () => {
                 </CardHeader>
                 <CardContent className="flex-grow overflow-auto">
                     <Table>
-                        <TableCaption>Chi tiêu trong dự án</TableCaption>
+                        {/* <TableCaption>Chi tiêu trong dự án</TableCaption> */}
                         <TableHeader>
 
                             <TableRow>
@@ -62,28 +68,41 @@ const ProjectSpending = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {projectspending.map((project, index) => (
-                                <TableRow key={index}>
-                                    <TableCell className="font-medium">{project.projectName}</TableCell>
-                                    <TableCell>{project.teamMembers.length}</TableCell>
-                                    <TableCell>{project.issues.length}</TableCell>
-                                    <TableCell>{formatCurrency(project.fundingAmount)}</TableCell>
-                                    <TableCell className={project.profitAmount && project.profitAmount < 0 ? "text-red-500" : "text-green-500"}>
-                                        {formatCurrency(project.profitAmount)}
+                            {projectspending.length > 0 ? (
+                                projectspending.map((project, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell className="font-medium">{project.projectName}</TableCell>
+                                        <TableCell>{project.teamMembers.length}</TableCell>
+                                        <TableCell>{project.issues.length}</TableCell>
+                                        <TableCell>{formatCurrency(project.fundingAmount)}</TableCell>
+                                        <TableCell className={project.profitAmount && project.profitAmount < 0 ? "text-red-500" : "text-green-500"}>
+                                            {formatCurrency(project.profitAmount)}
+                                        </TableCell>
+                                        <TableCell>{project.projectStatus === 'done' ? 'Hoàn thành' : 'Chưa hoàn thành'}</TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="ghost" size="icon" onClick={() => navigate("/project/PDF/Information/" + project.id)}>
+                                                <Download className="h-4 w-4" />
+                                                <span className="sr-only">Tải về thông tin dự án {project.projectName}</span>
+                                            </Button>
+                                        </TableCell>
+
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-4">
+                                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                            <InboxIcon className="h-8 w-8 mb-2" />
+                                            <p>Không có dữ liệu</p>
+                                        </div>
                                     </TableCell>
-                                    <TableCell>{project.projectStatus === 'done' ? 'Hoàn thành' : 'Chưa hoàn thành'}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon" onClick={() => navigate("/project/PDF/Information/" + project.id)}>
-                                            <Download className="h-4 w-4" />
-                                            <span className="sr-only">Tải về thông tin dự án {project.projectName}</span>
-                                        </Button>
-                                    </TableCell>
-                                    
                                 </TableRow>
-                            ))}
+                            )
+                            }
                         </TableBody>
                     </Table>
                 </CardContent>
+                <LoadingPopup isOpen={isOpen}/>
             </Card>
         </div>
     )

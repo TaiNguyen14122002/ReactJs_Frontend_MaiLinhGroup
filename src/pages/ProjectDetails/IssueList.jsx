@@ -32,15 +32,19 @@ const IssueList = ({ title, status }) => {
 
     return (
         <div className='w-full'>
-            <Dialog>
-                <Card className="w-full">
+            <Dialog >
+                <Card className="w-full" >
                     <CardHeader>
                         <CardTitle>{title}</CardTitle>
                     </CardHeader>
 
                     <CardContent className="px-2">
                         <Table className="min-w-full border-collapse">
-                            <TableHead>
+                            <TableHead className={cn(
+                                                status === "Chưa làm" && "bg-red-50",
+                                                status === "Đang làm" && "bg-blue-50",
+                                                status === "Hoàn thành" && "bg-green-50"
+                                            )}>
                                 <TableRow>
                                     <TableCell className="border px-4 py-2 text-left">STT</TableCell>
                                     <TableCell className="border px-4 py-2 text-left">Tiêu đề</TableCell>
@@ -55,12 +59,12 @@ const IssueList = ({ title, status }) => {
                                 {issue.issues
                                     .filter(issue => issue.status === status)
                                     .map((item, index) => (
-                                        <TableRow
-                                            className={cn(
-                                                item.status === "pending" && "bg-red-50",
-                                                item.status === "in_progress" && "bg-blue-50",
-                                                item.status === "done" && "bg-green-50"
-                                            )} key={item.id} onClick={() => handleRowClick(item.id, id)} style={{ cursor: 'pointer' }} >
+                                        <TableRow className={cn(
+                                            status === "Chưa làm" && "bg-red-50",
+                                            status === "Đang làm" && "bg-blue-50",
+                                            status === "Hoàn thành" && "bg-green-50"
+                                        )}
+                                             key={item.id} onClick={() => handleRowClick(item.id, id)} style={{ cursor: 'pointer' }} >
                                             <TableCell className="border px-4 py-2">{index + 1}</TableCell>
                                             <TableCell className="border px-4 py-2">{item.title}</TableCell>
                                             <TableCell className="border px-4 py-2">{item.description}</TableCell>
@@ -69,7 +73,7 @@ const IssueList = ({ title, status }) => {
                                             </TableCell>
                                             <TableCell className="border px-4 py-2">{item.priority}</TableCell>
                                             <TableCell className="border px-4 py-2">{formatPrice.format(item.price)}</TableCell>
-                                            <TableCell className="border px-4 py-2">
+                                            <TableCell className="border px-4 py-2" onClick={(event) => event.stopPropagation()}>
                                                 <IssueCard projectId={id} item={item} />
                                             </TableCell>
                                         </TableRow>
@@ -80,8 +84,8 @@ const IssueList = ({ title, status }) => {
 
                     <CardFooter>
                         <DialogTrigger>
-                            <Button variant="outline" className="w-full flex items-center gap-2">
-                                <PlusIcon />
+                            <Button variant="outline" className="w-full text-white flex items-center gap-2 bg-blue-500">
+                                <PlusIcon color='white' />
                                 Thêm tác vụ
                             </Button>
                         </DialogTrigger>

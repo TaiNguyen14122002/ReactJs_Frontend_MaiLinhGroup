@@ -7,37 +7,54 @@ import { cn } from '@/lib/utils'
 import { DotFilledIcon, DotsVerticalIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
 import { MoreVertical } from 'lucide-react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 const ProjectCard = ({ item }) => {
-
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const token = localStorage.getItem('jwt');
+
+    const [isPinned, setIsPinned] = useState(item.action === 0);
+    const [project, setProject] = useState(item); // Lưu trữ dữ liệu dự án trong state
+
     const handleDelete = () => {
         dispatch(deleteProject({ projectId: item.id }));
     };
 
-
+    // Hàm để cập nhật trạng thái ghim của dự án
     const UpdateProjectPinned = async () => {
         try {
-
             if (!token) {
                 console.error("Token không tồn tại");
                 return;
             }
 
+            const newAction = isPinned ? 1 : 0;
+
+            // Gửi yêu cầu PUT để cập nhật trạng thái ghim
             const response = await axios.put(
-                `http://localhost:1000/api/projects/${item.id}/update-action`,
-                {},
+                `http://localhost:1000/api/projects/${item.id}/update-action-deleted`,
+                { action: newAction },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
+                    },
+                    params: {
+                        action: newAction
                     }
                 }
             );
+
+            // Chuyển đổi trạng thái ghim trong state
+            setIsPinned(!isPinned);
+
+            // Cập nhật lại thông tin dự án trong state mà không cần gọi lại API
+            setProject((prevState) => ({
+                ...prevState,
+                action: newAction
+            }));
 
             console.log(response.data);
         } catch (error) {
@@ -45,6 +62,7 @@ const ProjectCard = ({ item }) => {
         }
     }
 
+    // Hàm để xóa dự án
     const UpdateProjectAction = async () => {
         try {
             const response = await axios.put(
@@ -66,17 +84,21 @@ const ProjectCard = ({ item }) => {
         }
     }
 
+    const truncateText = (text, maxLength) => {
+        if (!text) return ''; // Kiểm tra nếu text là null hoặc undefined
+        return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+    };
     return (
         <Card className={cn(
             "flex flex-col relative",
-            item.category === "Front End" && "bg-yellow-50",
-            item.category === "backend" && "bg-blue-50",
-            item.category === "Full Stack" && "bg-gradient-to-br from-blue-50 to-yellow-50"
-        )} key={item.id}>
+            project.category === "Front End" && "bg-blue-100",
+            project.category === "backend" && "bg-green-100",
+            project.category === "Full Stack" && "bg-purple-100"
+        )} key={project.id}>
             <CardContent className="flex flex-col gap-4 p-6">
                 <div className="space-y-1.5">
                     <div className="flex justify-between items-start">
-                        <h2 onClick={() => navigate("/project/" + item.id)} className="cursor-pointer text-xl font-semibold">{item.name}</h2>
+                        <h2 onClick={() => navigate("/project/" + project.id)} className="cursor-pointer text-xl font-semibold">{project.name}</h2>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -85,27 +107,33 @@ const ProjectCard = ({ item }) => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => UpdateProjectPinned()}>Ghim</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => UpdateProjectAction()}>Xoá kế hoạch</DropdownMenuItem>
-                                <DropdownMenuItem >Xuất thống kê</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => UpdateProjectPinned()}>
+                                    {isPinned ? 'Ghim' : 'Bỏ ghim'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => UpdateProjectAction()}>
+                                    Xoá kế hoạch
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    Xuất thống kê
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
 
                     <span className={cn(
                         "inline-block text-sm px-2.5 py-0.5 rounded-full",
-                        item.category === "Front End" && "bg-yellow-100 text-yellow-800 border border-yellow-200",
-                        item.category === "backend" && "bg-blue-100 text-blue-800 border border-blue-200",
-                        item.category === "Full Stack" && "bg-gradient-to-r from-blue-100 to-yellow-100 text-blue-800 border border-blue-200"
+                        project.category === "Front End" && "bg-blue-500 font-bold text-white border border-yellow-200",
+                        project.category === "backend" && "bg-green-500 font-bold text-white  border border-blue-200",
+                        project.category === "Full Stack" && "bg-gradient-to-r text-white font-bold bg-purple-500  border border-blue-200"
                     )}>
-                        {item.category}
+                        {project.category}
                     </span>
                 </div>
-                <p className="text-muted-foreground flex-grow">
-                    {item.description}
+                <p className="text-gray-800 flex-grow">
+                    {truncateText(project.description, 120)}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                    {item.tags.map((tag) => (
+                    {project.tags.map((tag) => (
                         <span
                             key={tag}
                             className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold"
@@ -116,8 +144,7 @@ const ProjectCard = ({ item }) => {
                 </div>
             </CardContent>
         </Card>
+    );
+};
 
-    )
-}
-
-export default ProjectCard
+export default ProjectCard;

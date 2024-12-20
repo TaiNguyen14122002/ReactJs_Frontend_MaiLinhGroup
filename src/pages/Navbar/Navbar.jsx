@@ -27,7 +27,7 @@ import { FaBars } from "react-icons/fa";
 
 import ItemCard from "./ItemCard";
 import axios from "axios";
-import { AlertCircle, AlertTriangle, BarChart2, ChartNoAxesCombined, ChevronDown, Clock, Home, Inbox, LogOut, Plus, PlusCircle, Settings, Trash2, Users } from "lucide-react";
+import { AlertCircle, AlertTriangle, BarChart2, ChartNoAxesCombined, ChevronDown, Clock, Home, Inbox, LogOut, Plus, PlusCircle, Settings, Trash2, TrendingUp, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -68,6 +68,7 @@ const Navbar = () => {
     const token = localStorage.getItem('jwt');
 
     const [data, setData] = useState([]);
+    const [dataPinned, setDataPinned] = useState([]);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -121,9 +122,27 @@ const Navbar = () => {
         }
     }
 
+    const fetProjectPinned = async () => {
+        if (!token) {
+            console.log("Phiên đăng nhập đã hết hạn")
+        }
+        try {
+            const response = await axios.get(`http://localhost:1000/api/projects/pinned`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            setDataPinned(response.data)
+            console.log("Pinned", response.data)
+
+        } catch (error) {
+            console.log("Cõ lỗi trong quá trình tải dữ liệu", error)
+        }
+    }
+
     useEffect(() => {
         fetchDataAllProject();
-
+        fetProjectPinned();
         console.log("TaiNguyen", data)
     }, [])
 
@@ -146,9 +165,6 @@ const Navbar = () => {
 
     return (
         <div className="flex j">
-            {/* <div className="flex h-14 items-center border-b px-4">
-                <h2 className="text-lg font-semibold">Project Manager</h2>
-            </div> */}
             <div className="flex flex-col h-full border-r bg-muted/40">
                 <ScrollArea className="flex-1">
                     <div className="space-y-4 p-4">
@@ -180,10 +196,10 @@ const Navbar = () => {
                                 <Users className="mr-2 h-4 w-4" />
                                 Đã giao cho tôi
                             </Button>
-                            <Button variant="ghost" className="w-full justify-start">
+                            {/* <Button variant="ghost" className="w-full justify-start">
                                 <Settings className="mr-2 h-4 w-4" />
                                 Cài đặt
-                            </Button>
+                            </Button> */}
                         </div>
                         <Separator />
                         <div>
@@ -233,6 +249,10 @@ const Navbar = () => {
                                     <BarChart2 className="mr-2 h-4 w-4" />
                                     Chi tiêu từng thành viên
                                 </Button>
+                                <Button onClick={() => handleButtonClick("/project/performance")} variant="ghost" className="w-full justify-start font-normal">
+                                    <TrendingUp className="mr-2 h-4 w-4" />
+                                    Đánh giá hiệu suất
+                                </Button>
                             </div>
                         </div>
 
@@ -252,7 +272,7 @@ const Navbar = () => {
                             {isExpanded && (
                                 <ScrollArea className="h-[200px]">
                                     <div className="space-y-2">
-                                        {data.slice(0, visibleCount).map((item, index) => (
+                                        {dataPinned.slice(0, visibleCount).map((item, index) => (
                                             <ItemCard
                                                 key={item.id}
                                                 onClick={() => projectInformation(item.id)}
@@ -263,7 +283,7 @@ const Navbar = () => {
                                         ))}
                                     </div>
 
-                                    {visibleCount < data.length && (
+                                    {visibleCount < dataPinned.length && (
                                         <button
                                             onClick={handleShowMore}
                                             className="mt-4 text-blue-500 hover:underline"
@@ -292,8 +312,8 @@ const Navbar = () => {
 
                             </div>
                             {isAllExpanded && (
-                                <ScrollArea className="h-[300px]">
-                                    <div className="space-y-2 pr-4">
+                                <ScrollArea className="h-[200px]">
+                                    <div className="space-y-2">
                                         {data.slice(0, visibleCount).map((item, index) => (
                                             <ItemCard
                                                 key={item.id}
@@ -321,27 +341,6 @@ const Navbar = () => {
                     </div>
                 </ScrollArea>
             </div>
-
-            {/* <div className="mt-auto p-4">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-start">
-                            <Avatar className="mr-2 h-6 w-6">
-                                <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
-                                <AvatarFallback>JD</AvatarFallback>
-                            </Avatar>
-                            {auth.user?.fullname}
-                            <ChevronDown className="ml-auto h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[200px]">
-                        <DropdownMenuItem className="hover:bg-zinc-800">Profile</DropdownMenuItem>
-                        <DropdownMenuItem className="hover:bg-zinc-800">Settings</DropdownMenuItem>
-                        <DropdownMenuItem className="hover:bg-zinc-800" onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div> */}
-
         </div>
     );
 };

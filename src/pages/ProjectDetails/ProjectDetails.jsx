@@ -59,6 +59,8 @@ const ProjectDetails = () => {
   const [activeMainTab, setActiveMainTab] = useState('details');
   const [avaterUser, setAvaterUser] = useState([])
 
+  const[avatarOwner, setAvatarOwner] = useState([]);
+
   const handleMainTabChange = (event, newValue) => {
     setActiveMainTab(newValue);
   }
@@ -514,6 +516,7 @@ const ProjectDetails = () => {
           }
         });
         console.log("Cập nhập hình thức làm việc cho người dùng thành công")
+        fetchMember();
 
       } catch (error) {
         console.log("Có lỗi xảy ra trong quá trình tải dữ liệu");
@@ -551,7 +554,7 @@ const ProjectDetails = () => {
 
   const calculateProgress = (memberId) => {
     const memberTasks = tasks.filter(task => task.assignee?.id === memberId)
-    const completedTasks = memberTasks.filter(task => task.status === 'done').length
+    const completedTasks = memberTasks.filter(task => task.status === 'Hoàn thành').length
     const totalTasks = memberTasks.length
     return {
       percentage: totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0,
@@ -810,7 +813,7 @@ const ProjectDetails = () => {
   useEffect(() => {
     if (project.projectDetails?.endDate) {
       // Chuyển đổi ngày kết thúc và cập nhật newEndDate
-      const formattedEndDate = project.projectDetails.endDate.split('T')[0];
+      const formattedEndDate = project.projectDetails.endDate.toString().split('T')[0];
       setNewEndDate(formattedEndDate);
 
       // Cập nhật minDate (thêm 1 ngày)
@@ -858,6 +861,66 @@ const ProjectDetails = () => {
   const toggleMenu = () => {
     setIsExtensionDialogOpen(!isExtensionDialogOpen); // Đảo ngược trạng thái dropdown khi nhấn
   };
+
+
+  const handleDeleteMember = async (memberId) => {
+
+    setIsOpen(true)
+    if (!token) {
+      console.log("Phiên đăng nhập đã hết hạn");
+      return; // Dừng lại nếu không có token
+    }
+  
+    try {
+      const response = await axios.delete(`http://localhost:1000/api/projects/${id}/members/${memberId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      // Kiểm tra phản hồi từ server, ví dụ như kiểm tra status
+      if (response.status === "No message available") {
+        console.log("Xoá thành công thành viên trong dự án");
+      } else {
+        console.log("Có lỗi khi xóa thành viên: ", response.data);
+      }
+    } catch (error) {
+      // Kiểm tra lỗi axios, nếu có phản hồi từ server
+      if (error.response) {
+        console.error("Lỗi từ server:", error.response.data);
+        fetchMember();
+        toast.success('Xoá thành công thành viên')
+        setIsOpen(false)
+      } else {
+        console.error("Lỗi kết nối:", error.message);
+        toast.warning('Bạn không có quyền truy cập')
+      }
+    }
+  
+    // Các log khác (nếu cần thiết)
+    console.log("Xoá thành viên", memberId);
+    console.log("Xoá thành viên trong dự án", id);
+  };
+
+  const fetchAvatarOwner = async() => {
+    try{
+      const response = await axios.get(`http://localhost:1000/api/projects/${id}/ownerFile`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log("Avatar Owner Project", response.data)
+      setAvatarOwner(response.data)
+
+    }catch(error){
+      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error)
+    }
+  }
+
+  useEffect(() => {
+    fetchAvatarOwner();
+  }, [id])
+  
 
 
 
@@ -988,7 +1051,7 @@ const ProjectDetails = () => {
                   <div className="flex items-center gap-3 p-4 rounded-lg border bg-muted/50">
                     <div className="relative h-10 w-10">
                       <img
-                        src={avaterUser[0]?.fileName}
+                        src={avatarOwner[0]?.Filename}
                         alt="Avatar"
                         className="rounded-full object-cover"
                         height={40}
@@ -1172,7 +1235,7 @@ const ProjectDetails = () => {
                                 <div className=" flex items-center gap-4">
                                   <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
                                     <Avatar className="h-16 w-16 border-2 border-white">
-                                      <AvatarImage src="/placeholder-avatar.jpg" alt="Nguyễn Văn Tài" />
+                                      <AvatarImage src={item.fileInfo[0]?.fileName} alt="Nguyễn Văn Tài" />
                                       <AvatarFallback className="bg-white text-blue-500 text-xl font-semibold">{item.fullname.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                                     </Avatar>
 
@@ -1181,7 +1244,8 @@ const ProjectDetails = () => {
                                     <div className="flex items-center gap-2">
                                       <h3 className="text-xl font-semibold">{item.fullname}</h3>
                                     </div>
-                                    <p className="text-sm text-blue-100">Nhà phát triển</p>
+                                    
+                                    <p className="text-sm text-blue-100">{item.programerposition}</p>
 
                                   </div>
 
@@ -1604,7 +1668,7 @@ const ProjectDetails = () => {
                                   <Download className="h-4 w-4" />
                                   <span className="sr-only">Thống kê</span>
                                 </Button> */}
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteMember(member.userId)}>
                                   <Trash2 className="h-4 w-4" />
                                   <span className="sr-only">Xóa</span>
                                 </Button>
