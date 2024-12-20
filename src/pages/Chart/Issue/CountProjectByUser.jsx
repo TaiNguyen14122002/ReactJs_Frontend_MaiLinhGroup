@@ -42,7 +42,7 @@ const CountProjectByUser = () => {
         }
         else {
             try {
-                const response = await axios.get(`http://localhost:1000/api/projects/owner`, {
+                const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/owner`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -69,7 +69,7 @@ const CountProjectByUser = () => {
         }
         else {
             try {
-                const response = await axios.get(`http://localhost:1000/api/issues/projects/${selectedProjectId}/issues`, {
+                const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/projects/${selectedProjectId}/issues`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -123,7 +123,7 @@ const CountProjectByUser = () => {
         } else {
             setIsopen(true)
             try {
-                const response = await axios.get(`http://localhost:1000/api/issues/api/export/issues/${selectedProjectId}`, {
+                const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/api/export/issues/${selectedProjectId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     },
@@ -184,7 +184,7 @@ const CountProjectByUser = () => {
 
             try {
                 const response = await axios.put(
-                    `http://localhost:1000/api/issues/update/${selectedProjectId}`,
+                    `https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/update/${selectedProjectId}`,
                     jsonString,  // Chỉ gửi dữ liệu, không cần bao bọc vào object nữa
                     {
                         headers: {

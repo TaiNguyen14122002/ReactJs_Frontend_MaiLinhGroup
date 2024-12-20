@@ -35,7 +35,7 @@ const ProjectCard = ({ item }) => {
 
             // Gửi yêu cầu PUT để cập nhật trạng thái ghim
             const response = await axios.put(
-                `http://localhost:1000/api/projects/${item.id}/update-action-deleted`,
+                `https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${item.id}/update-action-deleted`,
                 { action: newAction },
                 {
                     headers: {
@@ -66,7 +66,7 @@ const ProjectCard = ({ item }) => {
     const UpdateProjectAction = async () => {
         try {
             const response = await axios.put(
-                `http://localhost:1000/api/projects/${item.id}/update-action-deleted`,
+                `https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${item.id}/update-action-deleted`,
                 { action: -1 },
                 {
                     headers: {

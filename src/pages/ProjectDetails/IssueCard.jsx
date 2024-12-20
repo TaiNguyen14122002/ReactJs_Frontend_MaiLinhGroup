@@ -26,7 +26,7 @@ const IssueCard = ({ item, projectId }) => {
     // Sử dụng useCallback để đảm bảo callback không bị tạo lại mỗi lần render
     const fetchProjectTabs = useCallback(async () => {
         try {
-            const response = await axios.get(`http://localhost:1000/api/taskCategories/project/${projectId}`, {
+            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/taskCategories/project/${projectId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -39,7 +39,7 @@ const IssueCard = ({ item, projectId }) => {
 
     const fetchAvater = useCallback(async() => {
         try{
-            const response = await axios.get(`http://localhost:1000/api/file-info/UserAssigner/${item.assignee.id}`, {
+            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/UserAssigner/${item.assignee.id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

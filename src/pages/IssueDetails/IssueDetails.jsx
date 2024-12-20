@@ -114,7 +114,7 @@ const IssueDetails = () => {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`http://localhost:1000/api/users/profile`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/users/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -129,7 +129,7 @@ const IssueDetails = () => {
 
   const fetchProject = async () => {
     try {
-      const response = await axios.get(`http://localhost:1000/api/projects/${projectId}`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${projectId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -159,7 +159,7 @@ const IssueDetails = () => {
       }
 
       console.log("Lương tiến độ", requestData)
-      const response = await axios.post(`http://localhost:1000/api/salaries/addSalaries`, {}, {
+      const response = await axios.post(`https://springboot-backend-pms-20-12-2024.onrender.com/api/salaries/addSalaries`, {}, {
         params: requestData,
         headers: {
           Authorization: `Bearer ${token}`
@@ -180,7 +180,7 @@ const IssueDetails = () => {
         salary: issue.issueDetails?.price * (value / 100),
       }
 
-      const response = await axios.put(`http://localhost:1000/api/salaries/update`, {}, {
+      const response = await axios.put(`https://springboot-backend-pms-20-12-2024.onrender.com/api/salaries/update`, {}, {
         params: requestData,
         headers: {
           Authorization: `Bearer ${token}`
@@ -267,7 +267,7 @@ const IssueDetails = () => {
                 toast.success(`Upload thành công tệp: ${file.name}! URL: ${downloadURL}`);
 
                 const token = localStorage.getItem('jwt');
-                const url = new URL(`http://localhost:1000/api/file-info/addFile`);
+                const url = new URL(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/addFile`);
                 url.searchParams.append('issueId', issueId); // Thêm 'id' vào tham số query
                 url.searchParams.append('fileUrl', downloadURL); // Thêm 'fileUrl' vào tham số query
 
@@ -320,7 +320,7 @@ const IssueDetails = () => {
   const updateprofitAmount = async () => {
     try {
       const response = await axios.put(
-        `http://localhost:1000/api/projects/${projectId}/update-profit`,
+        `https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${projectId}/update-profit`,
         {},
         {
           headers: {
@@ -330,7 +330,7 @@ const IssueDetails = () => {
       );
       console.log("Cập nhật lợi nhuận thành công:", response.data);
       const responsee = await axios.put(
-        `http://localhost:1000/api/projects/${projectId}/update-profit`,
+        `https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${projectId}/update-profit`,
         {},
         {
           headers: {
@@ -348,7 +348,7 @@ const IssueDetails = () => {
     if (inforUser.id === inforProject.owner?.id) {
       try {
         const response = await axios.put(
-          `http://localhost:1000/api/issues/${issueId}/finish/${value * 20}`,
+          `https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/${issueId}/finish/${value * 20}`,
           {},
           {
             headers: {
@@ -405,7 +405,7 @@ const IssueDetails = () => {
 
   const fetchProjectTabs = async () => {
     try {
-      const response = await axios.get(`http://localhost:1000/api/taskCategories/project/${projectId}`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/taskCategories/project/${projectId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -426,7 +426,7 @@ const IssueDetails = () => {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.get(`http://localhost:1000/api/file-info/issue/${issueId}`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/issue/${issueId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -448,7 +448,7 @@ const IssueDetails = () => {
       if(!token){
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.delete(`http://localhost:1000/api/file-info/delete/${FileId}`, {
+      const response = await axios.delete(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/delete/${FileId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

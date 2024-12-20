@@ -47,7 +47,7 @@ const token = localStorage.getItem('jwt')
 
 const fetchIssueCalender = async() => {
     try {
-        const response = await axios.get(`http://localhost:1000/api/issues/GetIssueByProjectIdAndUserId`, {
+        const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/GetIssueByProjectIdAndUserId`, {
             headers: {
                 Authorization: `Bearer ${token}`
             },

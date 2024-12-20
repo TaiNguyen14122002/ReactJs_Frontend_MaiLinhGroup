@@ -150,7 +150,7 @@ const Setting = () => {
                                 });
 
                                 const token = localStorage.getItem('jwt');
-                                const url = new URL(`http://localhost:1000/api/file-info/addOrUpdate`);
+                                const url = new URL(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/addOrUpdate`);
                                 url.searchParams.append('fileName', downloadURL);
 
                                 fetch(url, {
@@ -208,7 +208,7 @@ const Setting = () => {
             if (!token) {
                 console.log("Phiên đăng nhập đã hết hạn")
             }
-            const response = await axios.get(`http://localhost:1000/api/file-info/user`, {
+            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/user`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -248,7 +248,7 @@ const Setting = () => {
                 introduce: introduce
             }
 
-            const response = await axios.put(`http://localhost:1000/api/users/updateUser`,
+            const response = await axios.put(`https://springboot-backend-pms-20-12-2024.onrender.com/api/users/updateUser`,
                 requestBody, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -312,7 +312,7 @@ const Setting = () => {
 
         try {
             const response = await axios.put(
-                `http://localhost:1000/api/users/changePassword`,
+                `https://springboot-backend-pms-20-12-2024.onrender.com/api/users/changePassword`,
                 null, // Không có body
                 {
                     headers: {

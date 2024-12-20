@@ -28,7 +28,7 @@ const ProjectDeleted = () => {
       console.log("Người dùng không tồn tại");
     }
     try {
-      const response = await axios.get(`http://localhost:1000/api/projects/Projectsdeleted`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/Projectsdeleted`, {
         headers: {
           Authorization: `Bearer ${token}`
         },
@@ -57,7 +57,7 @@ const ProjectDeleted = () => {
         return; // Dừng nếu không có token
       }
 
-      const response = await axios.put(`http://localhost:1000/api/projects/${projectId}/update-action-deleted?action=0`,
+      const response = await axios.put(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${projectId}/update-action-deleted?action=0`,
         {},  // Không cần gửi body dữ liệu ở đây
         {
           headers: {

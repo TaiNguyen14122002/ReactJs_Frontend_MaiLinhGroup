@@ -137,7 +137,7 @@ const ProjectDetails = () => {
                 toast.success(`Upload thành công tệp: ${file.name}! URL: ${downloadURL}`);
 
                 const token = localStorage.getItem('jwt');
-                // fetch(`http://localhost:1000/api/projects/uploadFileToProject/${id}/upload`, {
+                // fetch(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/uploadFileToProject/${id}/upload`, {
                 //   method: 'PUT',
                 //   headers: {
                 //     'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ const ProjectDetails = () => {
                 //   },
                 //   body: JSON.stringify({ fileNames: [downloadURL] }),
                 // })
-                const url = new URL(`http://localhost:1000/api/file-info/addFile`);
+                const url = new URL(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/addFile`);
                 url.searchParams.append('projectId', id); // Thêm 'id' vào tham số query
                 url.searchParams.append('fileUrl', downloadURL); // Thêm 'fileUrl' vào tham số query
 
@@ -240,7 +240,7 @@ const ProjectDetails = () => {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.delete(`http://localhost:1000/api/file-info/delete/${FileInfoId}`, {
+      const response = await axios.delete(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/delete/${FileInfoId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -264,7 +264,7 @@ const ProjectDetails = () => {
   const fetchProcessData = async () => {
     console.log("wefwefdcsdfcewrfergfergfewrvvrgwegfrewds")
     try {
-      const response = await axios.get(`http://localhost:1000/api/issues/projects/completion-ratio`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/projects/completion-ratio`, {
         headers: {
           Authorization: `Bearer ${token}`
         },
@@ -302,7 +302,7 @@ const ProjectDetails = () => {
       console.log("Phiên đăng nhập đã hết hạn")
     }
     try {
-      const response = await axios.put(`http://localhost:1000/api/projects/updateProject/${id}`, fetchproject.projectDetails, {
+      const response = await axios.put(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/updateProject/${id}`, fetchproject.projectDetails, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -326,7 +326,7 @@ const ProjectDetails = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:1000/api/projects/${id}/update-action`,
+        `https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${id}/update-action`,
         {},
         {
           headers: {
@@ -357,7 +357,7 @@ const ProjectDetails = () => {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`http://localhost:1000/api/users/profile`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/users/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -372,7 +372,7 @@ const ProjectDetails = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get(`http://localhost:1000/api/projects/${id}`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -394,7 +394,7 @@ const ProjectDetails = () => {
     if (inforUser.id === inforProject.owner?.id) {
       try {
 
-        const response = await axios.get(`http://localhost:1000/api/projects/projects/${id}/issues/export`, {
+        const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/projects/${id}/issues/export`, {
           headers: {
             "Authorization": `Bearer ${token}`
           },
@@ -451,7 +451,7 @@ const ProjectDetails = () => {
     } else {
       console.log("id", id)
       try {
-        const response = await axios.get(`http://localhost:1000/api/users/project/${id}`, {
+        const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/users/project/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -477,7 +477,7 @@ const ProjectDetails = () => {
 
         console.log("Dữ liệu truyền vào", requestData)
 
-        const response = await axios.post(`http://localhost:1000/api/worktype/addWorkType`, null, {
+        const response = await axios.post(`https://springboot-backend-pms-20-12-2024.onrender.com/api/worktype/addWorkType`, null, {
           params: requestData,
           headers: {
             Authorization: `Bearer ${token}`
@@ -509,7 +509,7 @@ const ProjectDetails = () => {
         };
 
         console.log("Dữ liệu truyền vào", requestData)
-        const response = await axios.put(`http://localhost:1000/api/worktype/update`, null, {
+        const response = await axios.put(`https://springboot-backend-pms-20-12-2024.onrender.com/api/worktype/update`, null, {
           params: requestData,
           headers: {
             Authorization: `Bearer ${token}`
@@ -538,7 +538,7 @@ const ProjectDetails = () => {
       const data = {
         projectId: id
       }
-      const response = await axios.get(`http://localhost:1000/api/issues/project/${id}`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/project/${id}`, {
 
         headers: {
           Authorization: `Bearer ${token}`
@@ -588,7 +588,7 @@ const ProjectDetails = () => {
           status: value,
         }
 
-        const response = await axios.put(`http://localhost:1000/api/projects/${id}/status`, null, {
+        const response = await axios.put(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${id}/status`, null, {
           params: requestData,
           headers: {
             Authorization: `Bearer ${token}`
@@ -649,7 +649,7 @@ const ProjectDetails = () => {
 
   const fetchProjectTabs = async () => {
     try {
-      const response = await axios.get(`http://localhost:1000/api/taskCategories/project/${id}`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/taskCategories/project/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -664,7 +664,7 @@ const ProjectDetails = () => {
 
   const fetchProjectIssue = async () => {
     try {
-      const response = await axios.get(`http://localhost:1000/api/issues/project/${id}`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/project/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -681,7 +681,7 @@ const ProjectDetails = () => {
       const requestData = {
         Label: newTabId
       }
-      const response = await axios.post(`http://localhost:1000/api/taskCategories/project/${id}`, {}, {
+      const response = await axios.post(`https://springboot-backend-pms-20-12-2024.onrender.com/api/taskCategories/project/${id}`, {}, {
         params: requestData,
         headers: {
           Authorization: `Bearer ${token}`
@@ -696,7 +696,7 @@ const ProjectDetails = () => {
 
   const deleteProjectTabs = async (TabsId) => {
     try {
-      const response = await axios.delete(`http://localhost:1000/api/taskCategories/project/${id}/task/${TabsId}`, {
+      const response = await axios.delete(`https://springboot-backend-pms-20-12-2024.onrender.com/api/taskCategories/project/${id}/task/${TabsId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -731,7 +731,7 @@ const ProjectDetails = () => {
   const PdfExport = async (userId) => {
     try {
 
-      const response = await axios.get(`http://localhost:1000/api/export/projects/${id}/users/${userId}/tasks/pdf`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/export/projects/${id}/users/${userId}/tasks/pdf`, {
         headers: {
           Authorization: `Bearer ${token}`
         },
@@ -767,7 +767,7 @@ const ProjectDetails = () => {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.get(`http://localhost:1000/api/file-info/project/${id}`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/project/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -789,7 +789,7 @@ const ProjectDetails = () => {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.get(`http://localhost:1000/api/file-info/user`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/user`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -828,7 +828,7 @@ const ProjectDetails = () => {
   const handleExtend = async () => {
     if (newEndDate) {
       try {
-        const response = await axios.put(`http://localhost:1000/api/projects/${id}/endDate`,
+        const response = await axios.put(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${id}/endDate`,
           newEndDate,
           {
             headers: {
@@ -872,7 +872,7 @@ const ProjectDetails = () => {
     }
   
     try {
-      const response = await axios.delete(`http://localhost:1000/api/projects/${id}/members/${memberId}`, {
+      const response = await axios.delete(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${id}/members/${memberId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -904,7 +904,7 @@ const ProjectDetails = () => {
 
   const fetchAvatarOwner = async() => {
     try{
-      const response = await axios.get(`http://localhost:1000/api/projects/${id}/ownerFile`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${id}/ownerFile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

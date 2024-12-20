@@ -82,7 +82,7 @@ function App() {
     try {
       // Gửi yêu cầu PUT để đánh dấu thông báo là đã đọc
       const response = await axios.put(
-        `http://localhost:1000/api/notification/${id}/read`,
+        `https://springboot-backend-pms-20-12-2024.onrender.com/api/notification/${id}/read`,
         {}, // Gửi body trống (hoặc dữ liệu cần thiết)
         {
           headers: {
@@ -93,7 +93,7 @@ function App() {
       console.log("Đã đọc thông báo", response.data);
 
       // Lấy lại danh sách thông báo từ server
-      const notificationsResponse = await axios.get('http://localhost:1000/api/notification/notificationanduser', {
+      const notificationsResponse = await axios.get('https://springboot-backend-pms-20-12-2024.onrender.com/api/notification/notificationanduser', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -145,7 +145,7 @@ function App() {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.get(`http://localhost:1000/api/notification/notificationanduser`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/notification/notificationanduser`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -169,7 +169,7 @@ function App() {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.get(`http://localhost:1000/api/file-info/user`, {
+      const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/user`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
