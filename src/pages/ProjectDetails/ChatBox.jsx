@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { PaperPlaneIcon } from '@radix-ui/react-icons'
+import { format } from 'date-fns'
 import { MoreVertical, Send } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -95,7 +96,7 @@ const ChatBox = () => {
               <p className="text-sm">{item.content} </p>
               <span className="text-xs text-gray-500 mt-1">
                 {/* {format(new Date(item.createdAt), 'HH:mm')} */}
-                Đã gửi lúc 23:30
+                {format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm')}
               </span>
             </div>
             
