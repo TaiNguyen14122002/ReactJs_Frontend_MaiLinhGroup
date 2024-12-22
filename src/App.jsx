@@ -12,7 +12,7 @@ import CountProjectByUser from './pages/Chart/Issue/CountProjectByUser';
 import GetIssuesCountByStatus from './pages/Chart/Issue/GetIssuesCountByStatus';
 import { Button } from "@/components/ui/button";
 
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, BrowserRouter } from 'react-router-dom';
 import { FaBars, FaChartBar, FaHome } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa";
 import { FaUserCheck } from "react-icons/fa";
@@ -204,7 +204,7 @@ function App() {
   
 
   return (
-    <>
+    <BrowserRouter>
 
       {
         auth.user ? (
@@ -388,7 +388,7 @@ function App() {
           <Auth />
         )
       }
-    </>
+    </BrowserRouter>
 
   );
 }
