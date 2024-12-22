@@ -15,7 +15,7 @@ const ForgetPassword = ({toggleAuthMode}) => {
     const checkEmailExists = async (email) => {
         // This is a mock function. In a real application, you would call your API here.
         try{
-            const response = await axios.post(`https://springboot-backend-pms-20-12-2024.onrender.com/auth/forgotPassword`, null, {
+            const response = await axios.post(`https://springbootbackendpms2012202-production.up.railway.app/auth/forgotPassword`, null, {
                 params: {email}
             });
             if(response.data){

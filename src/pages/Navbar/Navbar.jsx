@@ -107,7 +107,7 @@ const Navbar = () => {
         }
 
         try {
-            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects`, {
+            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -127,7 +127,7 @@ const Navbar = () => {
             console.log("Phiên đăng nhập đã hết hạn")
         }
         try {
-            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/pinned`, {
+            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/pinned`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

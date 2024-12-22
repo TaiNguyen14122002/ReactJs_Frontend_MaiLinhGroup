@@ -32,7 +32,7 @@ const UserList = ({ issueDetails, onUpdate }) => {  // Thêm onUpdate vào props
 
     const fetchAvatar = async (userId) => {
         try {
-            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/file-info/UserAssigner/${userId}`, {
+            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/file-info/UserAssigner/${userId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

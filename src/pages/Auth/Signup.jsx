@@ -78,7 +78,7 @@ const Signup = ({ toggleAuthMode }) => {
     try {
       // Gửi yêu cầu đăng ký đến API
       console.log(formData);
-      const response = await axios.post('https://springboot-backend-pms-20-12-2024.onrender.com/auth/signup', formData);
+      const response = await axios.post('https://springbootbackendpms2012202-production.up.railway.app/auth/signup', formData);
 
       // Kiểm tra phản hồi từ API
       if (response.data) {

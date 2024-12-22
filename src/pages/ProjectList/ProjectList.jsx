@@ -59,7 +59,7 @@ const ProjectList = () => {
                 return;
             }
             
-            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/projectPinned`, {
+            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/projectPinned`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

@@ -31,7 +31,7 @@ const IssueExpired = () => {
         }
 
         try {
-            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/expired`, {
+            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/expired`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -196,7 +196,7 @@ const IssueExpired = () => {
         console.log("Tai", extensionDays)
         try {
             const response = await axios.put(
-                `https://springboot-backend-pms-20-12-2024.onrender.com/api/issues/${taskId}/due-date`,
+                `https://springbootbackendpms2012202-production.up.railway.app/api/issues/${taskId}/due-date`,
                 extensionDays, // Gửi trực tiếp chuỗi ngày mà không cần bao bọc trong đối tượng
                 {
                     headers: {

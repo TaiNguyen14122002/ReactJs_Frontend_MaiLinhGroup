@@ -31,7 +31,7 @@ const ProjectExpired = () => {
             console.log("Người dùng không tồn tại");
         }
         try {
-            const response = await axios.get(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/expired`, {
+            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/expired`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 },
@@ -73,7 +73,7 @@ const ProjectExpired = () => {
         }
 
         try {
-            const response = await axios.put(`https://springboot-backend-pms-20-12-2024.onrender.com/api/projects/${selectedProject.id}/endDate`,
+            const response = await axios.put(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/${selectedProject.id}/endDate`,
                 newEndDate,
                 {
                     headers: {

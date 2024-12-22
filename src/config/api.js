@@ -1,7 +1,7 @@
 // config/api.js
 import axios from "axios";
 
-export const API_BASE_URL = "https://springboot-backend-pms-20-12-2024.onrender.com";
+export const API_BASE_URL = "https://springbootbackendpms2012202-production.up.railway.app";
 
 const api = axios.create({ baseURL: API_BASE_URL });
 const jwt = localStorage.getItem("jwt");
