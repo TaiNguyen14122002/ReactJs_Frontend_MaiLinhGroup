@@ -204,7 +204,7 @@ function App() {
   
 
   return (
-    <>
+    <BrowserRouter>
 
       {
         auth.user ? (
@@ -388,7 +388,7 @@ function App() {
           <Auth />
         )
       }
-    </>
+    </BrowserRouter>
 
   );
 }
