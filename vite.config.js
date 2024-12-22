@@ -26,6 +26,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
+  server: {
+    proxy: {
+      // Proxy Firebase Storage
+      '/files': {
+        target: 'https://firebasestorage.googleapis.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/files/, ''),
+      },
+    },
+  },
 })
+
 
 
