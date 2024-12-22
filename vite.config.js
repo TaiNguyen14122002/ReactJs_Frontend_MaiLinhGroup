@@ -22,12 +22,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  server: {
-    // Cấu hình để đảm bảo ứng dụng fallback về index.html
-    historyApiFallback: true,
-  },
+  base: '/', // Đảm bảo base path được cấu hình đúng
   build: {
-    outDir: 'build', // Đảm bảo thư mục build là 'build' khi deploy lên Vercel
+    outDir: 'dist',
   },
 })
+
 
