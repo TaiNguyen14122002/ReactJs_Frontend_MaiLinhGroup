@@ -131,7 +131,7 @@ const PDFExport = () => {
     // Fetching project data
     const fetchPDFExport = async () => {
         try {
-            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/${projectId}/Export/PDF`, {
+            const response = await axios.get(`http://localhost:1000/api/projects/${projectId}/Export/PDF`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

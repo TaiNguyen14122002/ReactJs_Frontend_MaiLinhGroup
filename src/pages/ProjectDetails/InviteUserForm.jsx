@@ -5,29 +5,29 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { tags } from '../ProjectList/ProjectList'
+// import { tags } from '../ProjectList/ProjectList'
 import { Cross1Icon } from '@radix-ui/react-icons'
 import { useDispatch } from 'react-redux'
 import { inviteToProject } from '@/Redux/Project/Action'
 import { useParams } from 'react-router-dom'
 
 const InviteUserForm = () => {
-    const dispatch = useDispatch();
-    const {id} = useParams();
-    const form = useForm({
-        // resolver: zod
-        defaultValues: {
-            email: ""
-        },
-    })
+    // const dispatch = useDispatch();
+    // const {id} = useParams();
+    // const form = useForm({
+    //     // resolver: zod
+    //     defaultValues: {
+    //         email: ""
+    //     },
+    // })
 
-    const onSubmit = (data) => {
-        dispatch(inviteToProject({email: data.email, projectId:id}));
-        console.log("invite:", data);
-    };
+    // const onSubmit = (data) => {
+    //     dispatch(inviteToProject({email: data.email, projectId:id}));
+    //     console.log("invite:", data);
+    // };
     return (
         <div>
-        <Form {...form}>
+        {/* <Form {...form}>
                   <form className='space-y-5' onSubmit={form.handleSubmit(onSubmit)}>
                       <FormField control={form.control}
                           name="email"
@@ -48,7 +48,7 @@ const InviteUserForm = () => {
                               </Button>
                       </DialogClose>
                   </form>
-              </Form>
+              </Form> */}
       </div>
     )
 }

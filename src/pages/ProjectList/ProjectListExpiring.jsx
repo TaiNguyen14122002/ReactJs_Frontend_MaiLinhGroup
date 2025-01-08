@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingPopup } from '../Performance/LoadingPopup';
+import { useNavigate } from 'react-router-dom';
+
 
 const ProjectListExpiring = () => {
     const [projects, setProjects] = useState([]);
@@ -16,6 +18,8 @@ const ProjectListExpiring = () => {
     const token = localStorage.getItem('jwt');
     const [searchTerm, setSearchTerm] = useState('')
     const [sortOrder, setSortOrder] = useState('')
+
+    const navigate = useNavigate();
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -26,7 +30,7 @@ const ProjectListExpiring = () => {
             console.log("Người dùng không tồn tại")
         }
         try {
-            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/expiring`, {
+            const response = await axios.get(`http://localhost:1000/api/projects/expiring`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 },
@@ -74,6 +78,11 @@ const ProjectListExpiring = () => {
     const truncateText = (text, maxLength) => {
         return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
     };
+
+    const handleClick = (projectId) => {
+        console.log("id dự án", projectId);
+        navigate("/project/" + projectId)
+    }
     return (
         <div>
             <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-100">
@@ -130,7 +139,7 @@ const ProjectListExpiring = () => {
                                         <p className="text-2xl font-bold text-blue-500">Chi phí dự án: {formatCurrency(plan.fundingAmount)}</p>
                                     </CardContent>
                                     <CardFooter className="flex justify-between ">
-                                        <Button variant="outline" className="border-blue-400 bg-[rgb(29,134,192)] w-full text-white hover:bg-blue-100">Chi tiết</Button>
+                                        <Button onClick={() => handleClick(plan.id)} variant="outline" className="border-blue-400 bg-[rgb(29,134,192)] w-full text-white hover:bg-blue-100">Chi tiết</Button>
                                         {/* <Button className="bg-[rgb(29,134,192)] hover:bg-blue-700 text-white">Gia hạn thời gian</Button> */}
                                     </CardFooter>
                                 </Card>

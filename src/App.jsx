@@ -61,7 +61,7 @@ function App() {
 
   useEffect(() => {
     dispatch(getUser());
-    dispatch(fetchProjects({}));
+    // dispatch(fetchProjects({}));
   }, [auth.jwt, token]);
 
   const toggleNavbar = () => {
@@ -77,35 +77,35 @@ function App() {
 
   const unreadCount = notifications.notifications?.filter(n => !n.read).length
 
-  const markAsRead = async (id) => {
-    console.log("Thông báo", id);
-    try {
-      // Gửi yêu cầu PUT để đánh dấu thông báo là đã đọc
-      const response = await axios.put(
-        `https://springbootbackendpms2012202-production.up.railway.app/api/notification/${id}/read`,
-        {}, // Gửi body trống (hoặc dữ liệu cần thiết)
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      console.log("Đã đọc thông báo", response.data);
+  // const markAsRead = async (id) => {
+  //   console.log("Thông báo", id);
+  //   try {
+  //     // Gửi yêu cầu PUT để đánh dấu thông báo là đã đọc
+  //     const response = await axios.put(
+  //       `http://localhost:1000/api/notification/${id}/read`,
+  //       {}, // Gửi body trống (hoặc dữ liệu cần thiết)
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`
+  //         }
+  //       }
+  //     );
+  //     console.log("Đã đọc thông báo", response.data);
 
-      // Lấy lại danh sách thông báo từ server
-      const notificationsResponse = await axios.get('https://springbootbackendpms2012202-production.up.railway.app/api/notification/notificationanduser', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+  //     // Lấy lại danh sách thông báo từ server
+  //     const notificationsResponse = await axios.get('http://localhost:1000/api/notification/notificationanduser', {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`
+  //       }
+  //     });
 
-      // Cập nhật lại danh sách thông báo
-      setNotifications(notificationsResponse.data);
+  //     // Cập nhật lại danh sách thông báo
+  //     setNotifications(notificationsResponse.data);
 
-    } catch (error) {
-      console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
-    }
-  };
+  //   } catch (error) {
+  //     console.log("Có lỗi xảy ra trong quá trình tải dữ liệu", error);
+  //   }
+  // };
 
 
 
@@ -140,27 +140,27 @@ function App() {
 
 
 
-  const fetchNotification = async () => {
-    try {
-      if (!token) {
-        console.log("Phiên đăng nhập đã hết hạn")
-      }
-      const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/notification/notificationanduser`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      console.log("Dữ liệu thông báo", response.data)
-      setNotifications(response.data)
+  // const fetchNotification = async () => {
+  //   try {
+  //     if (!token) {
+  //       console.log("Phiên đăng nhập đã hết hạn")
+  //     }
+  //     const response = await axios.get(`http://localhost:1000/api/notification/notificationanduser`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`
+  //       }
+  //     })
+  //     console.log("Dữ liệu thông báo", response.data)
+  //     setNotifications(response.data)
 
-    } catch (error) {
-      console.log("Có lỗi xảy ra trong quá tình tải dữ liệu", error)
-    }
-  }
+  //   } catch (error) {
+  //     console.log("Có lỗi xảy ra trong quá tình tải dữ liệu", error)
+  //   }
+  // }
 
-  useEffect(() => {
-    fetchNotification()
-  }, [token])
+  // useEffect(() => {
+  //   fetchNotification()
+  // }, [token])
 
   const [avaterUser, setAvaterUser] = useState([])
 
@@ -169,7 +169,7 @@ function App() {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/file-info/user`, {
+      const response = await axios.get(`http://localhost:2000/api/user/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -198,10 +198,10 @@ function App() {
     if (!Array.isArray(filteredNotifications)) {
       return []; // Trả về mảng rỗng nếu filteredNotifications không phải là mảng
     }
-  
+
     return filteredNotifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [filteredNotifications]);
-  
+
 
   return (
     <>
@@ -229,7 +229,14 @@ function App() {
               >
                 <Menu className="h-6 w-6" />
               </Button>
-              <h1 className="text-lg font-semibold text-white">Project Manager</h1>
+              <div className="flex items-center">
+                <img
+                  src="https://seeklogo.com/images/M/mai-linh-corporation-logo-8D6CDF27F1-seeklogo.com.png"
+                  alt="Project Manager Logo"
+                  className=" h-8 mr-2"
+                />
+                <h1 className="text-lg font-semibold text-white">MLC_Message_Hub</h1>
+              </div>
               <div className="ml-auto">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -323,10 +330,11 @@ function App() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="w-full justify-start">
                           <Avatar className="mr-2 h-6 w-6">
-                            <AvatarImage src={avaterUser[0]?.fileName} alt="Avatar" />
-                            <AvatarFallback>JD</AvatarFallback>
+                            <AvatarImage src={avaterUser[0]?.userId} alt="Avatar" />
+                            <AvatarFallback>ADMIN</AvatarFallback>
                           </Avatar>
-                          {auth.user?.fullname}
+                          {/* {auth.user?.userId} */}
+                          Tài Nguyễn
                           <ChevronDown className="ml-auto h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -337,7 +345,7 @@ function App() {
                             Tổng quan
                           </Button>
                         </DropdownMenuItem>
-                      
+
                         <DropdownMenuItem className="hover:bg-zinc-800" onClick={handleLogout}>
                           <Button variant="ghost" className="w-full justify-start text-red-500 mt-auto">
                             <LogOut className="mr-2 h-4 w-4" />
@@ -366,7 +374,7 @@ function App() {
                       <Route path='/project/status' element={<GetIssuesCountByStatus />} />
                       <Route path='/project/expiring' element={<ProjectListExpiring />} />
                       <Route path='/project/expired' element={<ProjectExpired />} />
-                      <Route path='/project/deleted' element={<ProjectDeleted />} />
+                      <Route path='/Branch/Management' element={<ProjectDeleted />} />
                       <Route path='/project/calender' element={<Calender />} />
                       <Route path='/user/information' element={<Setting />} />
                       <Route path='/project/statistical' element={<ProjectSpending />} />

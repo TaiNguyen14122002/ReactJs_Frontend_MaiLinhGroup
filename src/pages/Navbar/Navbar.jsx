@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/Redux/Auth/Action';
 import { Layout } from 'antd';
 
-import { FaChartBar, FaTrashRestore } from "react-icons/fa";
+import { FaBuilding, FaChartBar, FaTrashRestore } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa";
 import { FaHome } from "react-icons/fa";
 import { FaUserCheck } from "react-icons/fa";
@@ -27,7 +27,7 @@ import { FaBars } from "react-icons/fa";
 
 import ItemCard from "./ItemCard";
 import axios from "axios";
-import { AlertCircle, AlertTriangle, BarChart2, ChartNoAxesCombined, ChevronDown, Clock, Home, Inbox, LogOut, Plus, PlusCircle, Settings, Trash2, TrendingUp, Users } from "lucide-react";
+import { AlertCircle, AlertTriangle, BarChart2, ChartNoAxesCombined, ChevronDown, CircleGauge, Clock, Home, Inbox, LogOut, Plus, PlusCircle, Settings, Trash2, TrendingUp, Users, Warehouse } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -107,7 +107,7 @@ const Navbar = () => {
         }
 
         try {
-            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects`, {
+            const response = await axios.get(`http://localhost:1000/api/projects`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -127,7 +127,7 @@ const Navbar = () => {
             console.log("Phiên đăng nhập đã hết hạn")
         }
         try {
-            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/pinned`, {
+            const response = await axios.get(`http://localhost:1000/api/projects/pinned`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -168,34 +168,19 @@ const Navbar = () => {
             <div className="flex flex-col h-full border-r bg-muted/40">
                 <ScrollArea className="flex-1">
                     <div className="space-y-4 p-4">
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setIsModalOpen(true)}>
-                            <PlusCircle className="mr-2 h-4 w-4" color="white" />
-                            Thêm dự án mới
-                        </Button>
-                        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                            <DialogContent className="sm:max-w-[425px]">
-                                <DialogHeader>
-                                    <DialogTitle>Thêm kế hoạch mới</DialogTitle>
-                                    <DialogDescription>
-                                        Điền thông tin dự án mới của bạn vào đây, Nhấn lưu khi hoàn tất
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <CreateProjectForm />
-                            </DialogContent>
-                        </Dialog>
                         <div className="space-y-2">
                             <Button onClick={() => handleButtonClick("/")} variant="secondary" className="w-full justify-start">
-                                <Home className="mr-2 h-4 w-4" />
-                                Trung tâm
+                                <CircleGauge className="mr-2 h-4 w-4" />
+                                Bảng điều khiển
                             </Button>
                             <Button onClick={() => handleButtonClick("/countproject")} variant="ghost" className="w-full justify-start">
                                 <BarChart2 className="mr-2 h-4 w-4" />
                                 Thống kê
                             </Button>
-                            <Button onClick={() => handleButtonClick("/upgrade_plan")} variant="ghost" className="w-full justify-start">
+                            {/* <Button onClick={() => handleButtonClick("/upgrade_plan")} variant="ghost" className="w-full justify-start">
                                 <Users className="mr-2 h-4 w-4" />
                                 Đã giao cho tôi
-                            </Button>
+                            </Button> */}
                             {/* <Button variant="ghost" className="w-full justify-start">
                                 <Settings className="mr-2 h-4 w-4" />
                                 Cài đặt
@@ -203,35 +188,36 @@ const Navbar = () => {
                         </div>
                         <Separator />
                         <div>
-                            <h3 className="mb-2 text-sm font-medium">Kế hoạch</h3>
+                            <h3 className="mb-2 text-sm font-medium">Chi nhánh</h3>
                             <div className="space-y-1">
-                                <Button onClick={() => handleButtonClick("/project/deleted")} variant="ghost" className="w-full justify-start font-normal">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Kế hoạch đã xoá
+                                <Button onClick={() => handleButtonClick("/Branch/Management")} variant="ghost" className="w-full justify-start font-normal">
+                                    <Warehouse className="mr-2 h-4 w-4" />
+                                    Quản lý chi nhánh
 
                                 </Button>
                                 <Button onClick={() => handleButtonClick("/project/expiring")} variant="ghost" className="w-full justify-start font-normal">
-                                    <Clock className="mr-2 h-4 w-4" />
-                                    Kế hoạch sắp hết hạn
+                                    
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Quản lý chi nhánh đã xoá
                                 </Button>
-                                <Button onClick={() => handleButtonClick("/project/expired")} variant="ghost" className="w-full justify-start font-normal">
+                                {/* <Button onClick={() => handleButtonClick("/project/expired")} variant="ghost" className="w-full justify-start font-normal">
                                     <AlertTriangle className="mr-2 h-4 w-4" />
                                     Kế hoạch đã trễ
-                                </Button>
+                                </Button> */}
                             </div>
                         </div>
                         <Separator />
 
                         <div>
-                            <h3 className="mb-2 text-sm font-medium">Tác vụ</h3>
+                            <h3 className="mb-2 text-sm font-medium">Phòng ban</h3>
                             <div className="space-y-1">
                                 <Button onClick={() => handleButtonClick("/issues/expiring")} variant="ghost" className="w-full justify-start font-normal">
-                                    <Clock className="mr-2 h-4 w-4" />
-                                    Tác vụ sắp hết hạn
+                                    <FaBuilding className="mr-2 h-4 w-4" />
+                                    Quản lý phòng ban
                                 </Button>
                                 <Button onClick={() => handleButtonClick("/issues/expired")} variant="ghost" className="w-full justify-start font-normal">
-                                    <AlertCircle className="mr-2 h-4 w-4" />
-                                    Tác vụ đã trễ
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Quản lý phòng ban đã xoá
                                 </Button>
                             </div>
                         </div>
@@ -239,104 +225,41 @@ const Navbar = () => {
                         <Separator />
 
                         <div>
-                            <h3 className="mb-2 text-sm font-medium">Báo cáo</h3>
+                            <h3 className="mb-2 text-sm font-medium">Đối tác</h3>
                             <div className="space-y-1">
                                 <Button onClick={() => handleButtonClick("/project/statistical")} variant="ghost" className="w-full justify-start font-normal">
-                                    <ChartNoAxesCombined className="mr-2 h-4 w-4" />
-                                    Chi tiêu dự án
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Quản lý đối tác
                                 </Button>
                                 <Button onClick={() => handleButtonClick("/project/members")} variant="ghost" className="w-full justify-start font-normal">
-                                    <BarChart2 className="mr-2 h-4 w-4" />
-                                    Chi tiêu từng thành viên
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Quản lý đôi tác đã xoá
                                 </Button>
-                                <Button onClick={() => handleButtonClick("/project/performance")} variant="ghost" className="w-full justify-start font-normal">
+                                {/* <Button onClick={() => handleButtonClick("/project/performance")} variant="ghost" className="w-full justify-start font-normal">
                                     <TrendingUp className="mr-2 h-4 w-4" />
                                     Đánh giá hiệu suất
-                                </Button>
+                                </Button> */}
                             </div>
-                        </div>
-
-                        <div>
-                            <div
-                                onClick={toggleContent}
-                                className="space-y-2"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold tracking-tight">Dự án đã ghim</h3>
-                                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isExpanded ? "rotate-180" : "")} />
-                                    <span className="sr-only">Toggle pinned projects</span>
-                                </div>
-
-
-                            </div>
-                            {isExpanded && (
-                                <ScrollArea className="h-[200px]">
-                                    <div className="space-y-2">
-                                        {dataPinned.slice(0, visibleCount).map((item, index) => (
-                                            <ItemCard
-                                                key={item.id}
-                                                onClick={() => projectInformation(item.id)}
-                                                label={item.name.charAt(0)}
-                                                color={colors[index % colors.length]}
-                                                title={item.name}
-                                            />
-                                        ))}
-                                    </div>
-
-                                    {visibleCount < dataPinned.length && (
-                                        <button
-                                            onClick={handleShowMore}
-                                            className="mt-4 text-blue-500 hover:underline"
-                                        >
-                                            Xem thêm
-                                        </button>
-                                    )}
-                                </ScrollArea>
-                            )}
-
                         </div>
 
                         <Separator />
 
                         <div>
-                            <div
-                                onClick={toggleAllContent}
-                                className="space-y-2"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold tracking-tight">Tất cả dự án</h3>
-                                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isAllExpanded ? "rotate-180" : "")} />
-                                    <span className="sr-only">Toggle pinned projects</span>
-                                </div>
-
-
+                            <h3 className="mb-2 text-sm font-medium">Thông báo</h3>
+                            <div className="space-y-1">
+                                <Button onClick={() => handleButtonClick("/project/statistical")} variant="ghost" className="w-full justify-start font-normal">
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Quản lý thông báo
+                                </Button>
+                                {/* <Button onClick={() => handleButtonClick("/project/members")} variant="ghost" className="w-full justify-start font-normal">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Quản lý đôi tác đã xoá
+                                </Button> */}
+                                {/* <Button onClick={() => handleButtonClick("/project/performance")} variant="ghost" className="w-full justify-start font-normal">
+                                    <TrendingUp className="mr-2 h-4 w-4" />
+                                    Đánh giá hiệu suất
+                                </Button> */}
                             </div>
-                            {isAllExpanded && (
-                                <ScrollArea className="h-[200px]">
-                                    <div className="space-y-2">
-                                        {data.slice(0, visibleCount).map((item, index) => (
-                                            <ItemCard
-                                                key={item.id}
-                                                onClick={() => projectInformation(item.id)}
-                                                label={item.name.charAt(0)}
-                                                color={colors[index % colors.length]}
-                                                title={item.name}
-                                            />
-                                        ))}
-
-                                        {visibleCount < data.length && (
-                                            <Button
-                                                variant="link"
-                                                className="w-full text-primary"
-                                                onClick={handleShowMore}
-                                            >
-                                                Xem thêm
-                                            </Button>
-                                        )}
-                                    </div>
-                                </ScrollArea>
-                            )}
-
                         </div>
                     </div>
                 </ScrollArea>

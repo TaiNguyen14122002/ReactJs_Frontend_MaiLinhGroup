@@ -21,7 +21,7 @@ const ProjectSpending = () => {
             if (!token) {
                 console.log("Phiên đăng nhập đã kết thúc")
             }
-            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/owner/statistical`, {
+            const response = await axios.get(`http://localhost:1000/api/projects/owner/statistical`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

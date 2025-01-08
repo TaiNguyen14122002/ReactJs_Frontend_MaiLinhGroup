@@ -24,7 +24,7 @@ const IssueExpiring = () => {
             if (!token) {
                 console.log("Phiên đăng nhập đã hết hạn")
             }
-            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/expiring`, {
+            const response = await axios.get(`http://localhost:1000/api/issues/expiring`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

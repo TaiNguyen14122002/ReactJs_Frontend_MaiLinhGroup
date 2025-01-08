@@ -8,11 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import axios from 'axios';
 import { addDays, differenceInDays, format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, CalendarCheck, CalendarIcon, Clock, DollarSign, Eye, RefreshCw, Search, User } from 'lucide-react';
+import { AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, CalendarCheck, CalendarIcon, Clock, DollarSign, Eye, InboxIcon, RefreshCw, Search, User } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { LoadingPopup } from '../Performance/LoadingPopup';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const IssueExpired = () => {
     const token = localStorage.getItem('jwt')
@@ -21,6 +22,7 @@ const IssueExpired = () => {
     const [extensionDays, setExtensionDays] = useState('');
     const [isLoading, setIsLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(true);
+    const [taskType, setTaskType] = useState('all')
 
     const fetchIssueExpired = async () => {
         setIsOpen(true);
@@ -31,7 +33,7 @@ const IssueExpired = () => {
         }
 
         try {
-            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/expired`, {
+            const response = await axios.get(`http://localhost:1000/api/issues/expired`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -76,6 +78,11 @@ const IssueExpired = () => {
                 task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 task.assignee.fullname.toLowerCase().includes(searchTerm.toLowerCase())
             )
+            .filter(task =>
+                taskType === 'all' ||
+                (taskType === 'owned' && task.owner === true) ||
+                (taskType === 'assigned' && task.owner === false)
+            )
 
         return filteredTasks.sort((a, b) => {
             if (sortConfig.key === 'assignee.fullname') {
@@ -106,7 +113,7 @@ const IssueExpired = () => {
             if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1
             return 0
         })
-    }, [issueExpired, sortConfig, searchTerm])
+    }, [issueExpired, sortConfig, searchTerm, taskType])
 
     const requestSort = (key) => {
         let direction = 'asc'
@@ -169,19 +176,6 @@ const IssueExpired = () => {
         }
     }, [selectedTask]);
 
-    // const handleExtendDueDate = (taskId) => {
-    //     console.log(`Extending task with ID: ${taskId}`);
-    //     setExpired(prevTasks =>
-    //         prevTasks.map(task =>
-    //             task.id === taskId
-    //                 ? { ...task, dueDate: format(parseISO(extensionDays), 'yyyy-MM-dd') }
-    //                 : task
-    //         )
-    //     )
-    //     console.log("Dữ liệu sau khi cập nhập", extensionDays)
-    //     setSelectedTask(null)
-    // }
-
     const CustomToast = () => {
         return (
             <div style={{ padding: '10px', backgroundColor: '#4caf50', color: 'white' }}>
@@ -196,7 +190,7 @@ const IssueExpired = () => {
         console.log("Tai", extensionDays)
         try {
             const response = await axios.put(
-                `https://springbootbackendpms2012202-production.up.railway.app/api/issues/${taskId}/due-date`,
+                `http://localhost:1000/api/issues/${taskId}/due-date`,
                 extensionDays, // Gửi trực tiếp chuỗi ngày mà không cần bao bọc trong đối tượng
                 {
                     headers: {
@@ -221,6 +215,12 @@ const IssueExpired = () => {
 
             setSelectedTask(null)
         } catch (error) {
+            toast.error(
+                <div>
+                    <div>Bạn không có quyền chỉnh sửa</div>
+                    <p>Đã gửi yêu cầu gia hạn ngày {extensionDays} đến chủ dự án</p>
+                </div>
+            );
             console.error('Error updating due date:', error)
         } finally {
             setIsLoading(false)
@@ -232,7 +232,7 @@ const IssueExpired = () => {
     };
 
     return (
-        
+
         <Card className="w-full shadow-lg">
             <CardHeader className="bg-gradient-to-r from-red-500 to-pink-600 text-white">
                 <CardTitle className="text-2xl font-bold text-white">Nhiệm vụ đã hết hạn</CardTitle>
@@ -250,6 +250,16 @@ const IssueExpired = () => {
                             className="pl-10 pr-4 py-2 w-full border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         />
                     </div>
+                    <Select value={taskType} onValueChange={setTaskType}>
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Chọn loại nhiệm vụ" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Tất cả nhiệm vụ</SelectItem>
+                            <SelectItem value="owned">Nhiệm vụ được phân công</SelectItem>
+                            <SelectItem value="assigned">Nhiệm vụ dự án làm chủ</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -270,106 +280,113 @@ const IssueExpired = () => {
                         </TableHeader>
 
                         <TableBody>
-                            {filteredAndSortedTasks.map((task) => (
-                                <TableRow key={task.id} className="hover:bg-gray-50 transition-colors" >
-                                    <TableCell className="font-medium">{task.title}</TableCell>
-                                    <TableCell className="max-w-xs truncate">{task.description}</TableCell>
-                                    <TableCell>
-                                        <Badge className={`${priorityColors[task.priority]} px-2 py-1 rounded-full text-xs font-semibold`}>
-                                            {getPriorityDisplay(task.priority)}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge className={`${statusColors[task.status]} px-2 py-1 rounded-full text-xs font-semibold`}>
-                                            {task.status}
-                                        </Badge>
-                                    </TableCell>
-                                    {/* <TableCell className="whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <Clock className="mr-2 h-4 w-4 text-gray-400" />
-                                            {format(parseISO(task.startDate), 'dd/MM/yyyy', { locale: vi })}
-                                        </div>
-                                    </TableCell> */}
-                                    <TableCell className="whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <CalendarCheck className="mr-2 h-4 w-4 text-gray-400" />
-                                            {format(parseISO(task.dueDate), 'dd/MM/yyyy', { locale: vi })}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap">
-                                        <div className="flex items-center text-red-600">
-                                            <AlertTriangle className="mr-2 h-4 w-4" />
-                                            {getDaysOverdue(task.dueDate)} ngày
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap">
-                                        <div className="flex items-center">
+                            {filteredAndSortedTasks.length > 0 ? (
+                                filteredAndSortedTasks.map((task) => (
+                                    <TableRow key={task.id} className="hover:bg-gray-50 transition-colors" >
+                                        <TableCell className="font-medium">{task.title}</TableCell>
+                                        <TableCell className="max-w-xs truncate">{task.description}</TableCell>
+                                        <TableCell>
+                                            <Badge className={`${priorityColors[task.priority]} px-2 py-1 rounded-full text-xs font-semibold`}>
+                                                {getPriorityDisplay(task.priority)}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge className={`${statusColors[task.status]} px-2 py-1 rounded-full text-xs font-semibold`}>
+                                                {task.status}
+                                            </Badge>
+                                        </TableCell>
 
-                                            {formatCurrency(task.price)}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center">
-                                            <User className="mr-2 h-4 w-4 text-gray-400" />
-                                            {task.assignee.fullname}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => setSelectedTask(task)}
-                                                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                                                    >
-                                                        <RefreshCw size={16} color="white" />
-                                                        Gia hạn
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                    <DialogHeader>
-                                                        <DialogTitle>Gia hạn nhiệm vụ {task.title}</DialogTitle>
-                                                    </DialogHeader>
-                                                    <div className="grid gap-4 py-4">
-                                                        <div className="grid grid-cols-4 items-center gap-4">
-                                                            <Label htmlFor="extensionDays" className="text-sm font-medium">
-                                                                Ngày hết hạn mới
-                                                            </Label>
+                                        <TableCell className="whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <CalendarCheck className="mr-2 h-4 w-4 text-gray-400" />
+                                                {format(parseISO(task.dueDate), 'dd/MM/yyyy', { locale: vi })}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <div className="flex items-center text-red-600">
+                                                <AlertTriangle className="mr-2 h-4 w-4" />
+                                                {getDaysOverdue(task.dueDate)} ngày
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <div className="flex items-center">
 
-                                                            <Input
-                                                                id="extensionDays"
-                                                                type="date"
-                                                                className="col-span-3"
-                                                                value={extensionDays}
-                                                                onChange={(e) => setExtensionDays(e.target.value)}
-                                                                min={task ? format(addDays(parseISO(task.dueDate), 1), 'yyyy-MM-dd') : ''}
+                                                {formatCurrency(task.price)}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center">
+                                                <User className="mr-2 h-4 w-4 text-gray-400" />
+                                                {task.assignee.fullname}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex space-x-2">
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => setSelectedTask(task)}
+                                                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                                        >
+                                                            <RefreshCw size={16} color="white" />
+                                                            Gia hạn
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent>
+                                                        <DialogHeader>
+                                                            <DialogTitle>Gia hạn nhiệm vụ {task.title}</DialogTitle>
+                                                        </DialogHeader>
+                                                        <div className="grid gap-4 py-4">
+                                                            <div className="grid grid-cols-4 items-center gap-4">
+                                                                <Label htmlFor="extensionDays" className="text-sm font-medium">
+                                                                    Ngày hết hạn mới
+                                                                </Label>
 
-                                                            />
+                                                                <Input
+                                                                    id="extensionDays"
+                                                                    type="date"
+                                                                    className="col-span-3"
+                                                                    value={extensionDays}
+                                                                    onChange={(e) => setExtensionDays(e.target.value)}
+                                                                    min={task ? format(addDays(parseISO(task.dueDate), 1), 'yyyy-MM-dd') : ''}
+
+                                                                />
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => selectedTask && handleExtendDueDate(selectedTask.id)}
-                                                        disabled={isLoading}>
-                                                        {isLoading ? 'Đang xử lý...' : 'Xác nhận gia hạn'}
-                                                    </Button>
-                                                </DialogContent>
-                                            </Dialog>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleRowClick(task.id, task.projectID)}
-                                                className="bg-green-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
-                                            >
-                                                <Eye size={16} color="white" className="mr-2" />
-                                                Chi tiết
-                                            </Button>
+                                                        <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => selectedTask && handleExtendDueDate(selectedTask.id)}
+                                                            disabled={isLoading}>
+                                                            {isLoading ? 'Đang xử lý...' : 'Xác nhận gia hạn'}
+                                                        </Button>
+                                                    </DialogContent>
+                                                </Dialog>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleRowClick(task.id, task.projectID)}
+                                                    className="bg-green-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                                >
+                                                    <Eye size={16} color="white" className="mr-2" />
+                                                    Chi tiết
+                                                </Button>
 
+                                            </div>
+
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={8} className="text-center py-4">
+                                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                            <InboxIcon className="h-8 w-8 mb-2" />
+                                            <p>Không có dữ liệu</p>
                                         </div>
-
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )
+                            }
                         </TableBody>
                     </Table>
 

@@ -72,7 +72,7 @@ export default function ProjectPerformanceDashboard() {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/owner/action`, {
+      const response = await axios.get(`http://localhost:1000/api/projects/owner/action`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -98,7 +98,7 @@ export default function ProjectPerformanceDashboard() {
         console.log("Phiên đăng nhập đã hết hạn");
         return;
       }
-      const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/projects/${projectId}/detailsMembers/machinelearning`, {
+      const response = await axios.get(`http://localhost:1000/api/projects/${projectId}/detailsMembers/machinelearning`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

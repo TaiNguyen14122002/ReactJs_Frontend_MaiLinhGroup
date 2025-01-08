@@ -35,7 +35,7 @@ const ProjectCard = ({ item }) => {
 
             // Gửi yêu cầu PUT để cập nhật trạng thái ghim
             const response = await axios.put(
-                `https://springbootbackendpms2012202-production.up.railway.app/api/projects/${item.id}/update-action-deleted`,
+                `http://localhost:1000/api/projects/${item.id}/update-action-deleted`,
                 { action: newAction },
                 {
                     headers: {
@@ -66,7 +66,7 @@ const ProjectCard = ({ item }) => {
     const UpdateProjectAction = async () => {
         try {
             const response = await axios.put(
-                `https://springbootbackendpms2012202-production.up.railway.app/api/projects/${item.id}/update-action-deleted`,
+                `http://localhost:1000/api/projects/${item.id}/update-action-deleted`,
                 { action: -1 },
                 {
                     headers: {

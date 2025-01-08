@@ -47,7 +47,7 @@ const ChatBox = () => {
       if (!token) {
         console.log("Phiên đăng nhập đã hết hạn")
       }
-      const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/file-info/user`, {
+      const response = await axios.get(`http://localhost:1000/api/file-info/user`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

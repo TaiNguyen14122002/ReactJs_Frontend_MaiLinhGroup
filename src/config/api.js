@@ -1,7 +1,7 @@
 // config/api.js
 import axios from "axios";
 
-export const API_BASE_URL = "https://springbootbackendpms2012202-production.up.railway.app";
+export const API_BASE_URL = "http://localhost:2000";
 
 const api = axios.create({ baseURL: API_BASE_URL });
 const jwt = localStorage.getItem("jwt");

@@ -29,7 +29,7 @@ const Subscription = () => {
   const fetchIssueByUser = async () => {
     setIsOpen(true)
     try {
-      const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/users/issues`, {
+      const response = await axios.get(`http://localhost:1000/api/issues/users/issues`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

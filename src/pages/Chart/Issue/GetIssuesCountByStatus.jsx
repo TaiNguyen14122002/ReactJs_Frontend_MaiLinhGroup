@@ -40,7 +40,7 @@ const GetIssuesCountByStatus = () => {
         }
 
         // Gọi API với header đúng
-        axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/countByPriority/${id}`, {
+        axios.get(`http://localhost:1000/api/issues/countByPriority/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,  // Truyền token vào header Authorization
             },
@@ -62,7 +62,7 @@ const GetIssuesCountByStatus = () => {
         }
 
         // Gọi API với header đúng
-        axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/countByStatus/${id}`, {
+        axios.get(`http://localhost:1000/api/issues/countByStatus/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,  // Truyền token vào header Authorization
             },
@@ -82,7 +82,7 @@ const GetIssuesCountByStatus = () => {
             return;
         }
 
-        axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/GetIssueByProjectIdAndUserId`, {
+        axios.get(`http://localhost:1000/api/issues/GetIssueByProjectIdAndUserId`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -105,7 +105,7 @@ const GetIssuesCountByStatus = () => {
             return;
         }
 
-        axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/countByStatusAndAssignee/${id}`, {
+        axios.get(`http://localhost:1000/api/issues/countByStatusAndAssignee/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -128,7 +128,7 @@ const GetIssuesCountByStatus = () => {
             return;
         }
 
-        axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/issues/project/${id}`, {
+        axios.get(`http://localhost:1000/api/issues/project/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

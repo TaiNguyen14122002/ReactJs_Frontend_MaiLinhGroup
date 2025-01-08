@@ -19,7 +19,7 @@ export default function LoginForm({ toggleAuthMode }) {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      email: '',
+      userId: '',
       password: ''
     }
   });
@@ -69,7 +69,7 @@ export default function LoginForm({ toggleAuthMode }) {
           <div
             className="m-12 xl:m-16 w-full bg-contain bg-center bg-no-repeat"
             style={{
-              backgroundImage: `url(https://assets.plan.io/images/blog/what-is-task-management.png)`,
+              backgroundImage: `url(https://cafef.vcmedia.vn/Images/Uploaded/Share/a2a1f5bd9a2fc528672acf6bfcb2301a/2013/01/27/Mai-Linh2/ho-so-mai-linh-group-ong-vua-om-yeu-cua-thi-truong-taxi.jpg)`,
             }}
           >
             {/* <h1 className=" mt-20 text-2xl xl:text-4xl font-extrabold text-blue-900">HỆ THỐNG QUẢN LÝ DỰ ÁN</h1> */}
@@ -90,9 +90,9 @@ export default function LoginForm({ toggleAuthMode }) {
                 <div className="relative">
                   <input
                     className="w-full px-5 pr-12 py-3 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
-                    type="email"
-                    placeholder="Nhập tên đăng ký ( email )"
-                    {...register('email', { required: 'Tên đăng nhập không được để trống' })}
+                    type="text"
+                    placeholder="Nhập tên tài khoản"
+                    {...register('userId', { required: 'Tên đăng nhập không được để trống' })}
                   />
                   <MailIcon className="absolute inset-y-0 right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
 

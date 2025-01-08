@@ -78,7 +78,7 @@ const Signup = ({ toggleAuthMode }) => {
     try {
       // Gửi yêu cầu đăng ký đến API
       console.log(formData);
-      const response = await axios.post('https://springbootbackendpms2012202-production.up.railway.app/auth/signup', formData);
+      const response = await axios.post('http://localhost:1000/auth/signup', formData);
 
       // Kiểm tra phản hồi từ API
       if (response.data) {

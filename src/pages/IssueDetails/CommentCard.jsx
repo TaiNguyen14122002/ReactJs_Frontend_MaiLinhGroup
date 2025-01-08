@@ -13,7 +13,7 @@ const CommentCard = ({item}) => {
     const [avatar, setAvatar] = useState([]);
     const fetchAvater = useCallback(async() => {
         try{
-            const response = await axios.get(`https://springbootbackendpms2012202-production.up.railway.app/api/file-info/UserAssigner/${item.user.id}`, {
+            const response = await axios.get(`http://localhost:1000/api/file-info/UserAssigner/${item.user.id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
