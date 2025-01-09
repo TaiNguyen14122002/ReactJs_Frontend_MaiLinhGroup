@@ -195,7 +195,7 @@ const Navbar = () => {
                                     Quản lý chi nhánh
 
                                 </Button>
-                                <Button onClick={() => handleButtonClick("/project/expiring")} variant="ghost" className="w-full justify-start font-normal">
+                                <Button onClick={() => handleButtonClick("/Branch/Deleted")} variant="ghost" className="w-full justify-start font-normal">
                                     
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Quản lý chi nhánh đã xoá
@@ -211,11 +211,11 @@ const Navbar = () => {
                         <div>
                             <h3 className="mb-2 text-sm font-medium">Phòng ban</h3>
                             <div className="space-y-1">
-                                <Button onClick={() => handleButtonClick("/issues/expiring")} variant="ghost" className="w-full justify-start font-normal">
+                                <Button onClick={() => handleButtonClick("/Department/Managemene")} variant="ghost" className="w-full justify-start font-normal">
                                     <FaBuilding className="mr-2 h-4 w-4" />
                                     Quản lý phòng ban
                                 </Button>
-                                <Button onClick={() => handleButtonClick("/issues/expired")} variant="ghost" className="w-full justify-start font-normal">
+                                <Button onClick={() => handleButtonClick("/Department/Deleted")} variant="ghost" className="w-full justify-start font-normal">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Quản lý phòng ban đã xoá
                                 </Button>
@@ -227,13 +227,13 @@ const Navbar = () => {
                         <div>
                             <h3 className="mb-2 text-sm font-medium">Đối tác</h3>
                             <div className="space-y-1">
-                                <Button onClick={() => handleButtonClick("/project/statistical")} variant="ghost" className="w-full justify-start font-normal">
+                                <Button onClick={() => handleButtonClick("/Partner/Managemene")} variant="ghost" className="w-full justify-start font-normal">
                                     <Users className="mr-2 h-4 w-4" />
                                     Quản lý đối tác
                                 </Button>
-                                <Button onClick={() => handleButtonClick("/project/members")} variant="ghost" className="w-full justify-start font-normal">
+                                <Button onClick={() => handleButtonClick("/Partner/Deleted")} variant="ghost" className="w-full justify-start font-normal">
                                     <Trash2 className="mr-2 h-4 w-4" />
-                                    Quản lý đôi tác đã xoá
+                                    Quản lý đối tác đã xoá
                                 </Button>
                                 {/* <Button onClick={() => handleButtonClick("/project/performance")} variant="ghost" className="w-full justify-start font-normal">
                                     <TrendingUp className="mr-2 h-4 w-4" />
@@ -247,7 +247,7 @@ const Navbar = () => {
                         <div>
                             <h3 className="mb-2 text-sm font-medium">Thông báo</h3>
                             <div className="space-y-1">
-                                <Button onClick={() => handleButtonClick("/project/statistical")} variant="ghost" className="w-full justify-start font-normal">
+                                <Button onClick={() => handleButtonClick("/Message/Management")} variant="ghost" className="w-full justify-start font-normal">
                                     <Users className="mr-2 h-4 w-4" />
                                     Quản lý thông báo
                                 </Button>

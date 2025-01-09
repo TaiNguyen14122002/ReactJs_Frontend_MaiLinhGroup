@@ -235,7 +235,7 @@ const IssueExpired = () => {
 
         <Card className="w-full shadow-lg">
             <CardHeader className="bg-gradient-to-r from-red-500 to-pink-600 text-white">
-                <CardTitle className="text-2xl font-bold text-white">Nhiệm vụ đã hết hạn</CardTitle>
+                <CardTitle className="text-2xl font-bold text-white">Danh sách phòng ban đã xoá</CardTitle>
             </CardHeader>
 
             <CardContent className="p-6">

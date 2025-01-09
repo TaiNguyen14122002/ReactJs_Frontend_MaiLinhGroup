@@ -222,7 +222,7 @@ export default function ProjectPerformanceDashboard() {
   return (
     <Card className="w-full mx-auto">
       <CardHeader>
-        <CardTitle>Thống kê hiệu suất dự án</CardTitle>
+        <CardTitle>Danh sách thông báo</CardTitle>
         <CardDescription>Hiệu suất làm việc của các thành viên trong dự án</CardDescription>
       </CardHeader>
       <CardContent>

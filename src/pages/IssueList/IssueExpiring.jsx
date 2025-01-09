@@ -172,7 +172,7 @@ const IssueExpiring = () => {
     return (
         <Card className="w-full shadow-lg">
             <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                <CardTitle className="text-2xl font-bold text-white">Nhiệm vụ sắp hết hạn</CardTitle>
+                <CardTitle className="text-2xl font-bold text-white">Danh sách phòng ban</CardTitle>
             </CardHeader>
 
             <CardContent className="p-6">

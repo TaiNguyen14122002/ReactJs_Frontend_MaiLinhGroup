@@ -50,7 +50,7 @@ const ProjectSpending = () => {
         <div className="min-h-screen flex flex-col">
             <Card className="flex-grow flex flex-col m-4">
                 <CardHeader>
-                    <CardTitle className="text-2xl font-bold">Thống kê chi tiêu dự án làm chủ</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Danh sách đối tác</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow overflow-auto">
                     <Table>

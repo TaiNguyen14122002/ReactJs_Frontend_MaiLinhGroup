@@ -129,7 +129,7 @@ const MemberInformation = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <Card className="shadow-lg">
         <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-          <CardTitle className="text-2xl text-white font-bold">Thống kê chi tiêu từng thành viên</CardTitle>
+          <CardTitle className="text-2xl text-white font-bold">Danh sách đối tác đã xoá</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">

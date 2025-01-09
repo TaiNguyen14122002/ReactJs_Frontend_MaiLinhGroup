@@ -372,18 +372,18 @@ function App() {
                       <Route path='/accept_invitation' element={<AcceptInvitation />} />
                       <Route path='/countproject' element={<CountProjectByUser />} />
                       <Route path='/project/status' element={<GetIssuesCountByStatus />} />
-                      <Route path='/project/expiring' element={<ProjectListExpiring />} />
+                      <Route path='/Branch/Deleted' element={<ProjectListExpiring />} />
                       <Route path='/project/expired' element={<ProjectExpired />} />
                       <Route path='/Branch/Management' element={<ProjectDeleted />} />
                       <Route path='/project/calender' element={<Calender />} />
                       <Route path='/user/information' element={<Setting />} />
-                      <Route path='/project/statistical' element={<ProjectSpending />} />
+                      <Route path='/Partner/Managemene' element={<ProjectSpending />} />
                       <Route path='/project/PDF/Information/:projectId' element={<PDFExport />} />
-                      <Route path='/project/members' element={<MemberInformation />} />
+                      <Route path='/Partner/Deleted' element={<MemberInformation />} />
                       <Route path='/members/PDF/project/:projectId/issue/:issueId' element={<PDFMenberInformation />} />
-                      <Route path='/issues/expiring' element={<IssueExpiring />} />
-                      <Route path='/issues/expired' element={<IssueExpired />} />
-                      <Route path='/project/performance' element={<ProjectPerformanceDashboard />} />
+                      <Route path='/Department/Managemene' element={<IssueExpiring />} />
+                      <Route path='/Department/Deleted' element={<IssueExpired />} />
+                      <Route path='/Message/Management' element={<ProjectPerformanceDashboard />} />
                       <Route path='/forgetpassword' element={<ForgetPassword />} />
                       <Route path="/resetPassword" element={<ResetPassword />} />
                     </Routes>

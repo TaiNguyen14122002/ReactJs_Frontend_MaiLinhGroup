@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import axios from 'axios'
-import { CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ClockIcon, Edit, Eye, Plus, RefreshCw, Search, TagIcon, Trash2, UserIcon } from 'lucide-react'
+import { AlignJustify, Building2Icon, CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ClockIcon, Edit, Eye, Filter, MapPinIcon, Plus, RefreshCw, Search, TagIcon, Trash2, UserIcon, X } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -20,6 +20,7 @@ import { format } from 'date-fns'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
 
 const ProjectDeleted = () => {
 
@@ -39,14 +40,23 @@ const ProjectDeleted = () => {
   const [updatedDateFilter, setUpdatedDateFilter] = useState(null)
 
   const [editingBranch, setEditingBranch] = useState(null)
+  const [detailsBranch, setDetailBranch] = useState(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   const [newBranch, setNewBranch] = useState({ branchName: '', isActive: true, province: '' })
 
   const handleEditClick = (branch) => {
     setEditingBranch(branch)
     setIsEditModalOpen(true)
+  }
+
+  const handleDetailsClick = (branch) => {
+    setDetailBranch(branch)
+    setIsDetailsModalOpen(true)
+
   }
 
   const handleEditSave = async (updatedBranch) => {
@@ -191,125 +201,180 @@ const ProjectDeleted = () => {
     toast.success('Nút xoá chưa làm')
   }
 
+  const formatDatee = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  }
+
+  const formatStatus = (isActive) => {
+    return isActive ? "Hoạt động" : "Không hoạt động";
+  }
+
+  const extractAddress = (branchName) => {
+    if (branchName) { // Kiểm tra nếu branchName không null hoặc undefined
+      const words = branchName.trim().split(' '); // Loại bỏ khoảng trắng thừa trước khi tách
+      if (words.length >= 2) {
+        return words.slice(-2).join(' '); // Lấy 2 từ cuối cùng
+      }
+      return branchName; // Trường hợp không đủ 2 từ, trả về toàn bộ chuỗi
+    }
+    return ''; // Trường hợp branchName là null hoặc undefined, trả về chuỗi rỗng
+  };
+
+
+  const DetailItem = ({ icon, label, value }) => {
+    return (
+      <div className="flex items-start space-x-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+        {icon}
+        <div>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</h3>
+          <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{value}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setSelectedProvince(null)
+    setActiveFilter('all')
+    setUpdatedDateFilter(null)
+  }
+
+
+
+
+
 
   return (
 
     <div className="">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-2xl font-bold">Danh sách chi nhánh</CardTitle>
-          <Button onClick={handleAddClick}>
+      <Card className="w-full shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-green-500 to-green-500 text-white rounded-t-lg">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+          <CardTitle className="text-2xl text-white font-bold">Danh sách chi nhánh</CardTitle>
+          <Button onClick={handleAddClick} className="bg-white text-blue-500 hover:bg-blue-100">
             <Plus className="mr-2 h-4 w-4" /> Thêm chi nhánh mới
           </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="flex space-x-4 mb-6">
-            <div className="flex-1">
-              <Input
-                type="text"
-                placeholder="Tìm kiếm theo tên hoặc ID"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value); // Cập nhật giá trị tìm kiếm
-                  if (e.target.value) {
-                    setSelectedProvince(null); // Xóa giá trị tỉnh/thành phố khi người dùng nhập tìm kiếm
-                  }
-                }}
-                className="w-full"
-              />
-            </div>
-            <Select value={selectedProvince} onValueChange={(value) => {
-              setSelectedProvince(value); // Cập nhật giá trị tỉnh/thành phố
-              if (value) {
-                setSearchTerm(''); // Xóa giá trị tìm kiếm khi người dùng chọn tỉnh/thành phố
-              }
-            }}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Chọn tỉnh/thành phố" />
-              </SelectTrigger>
-              <SelectContent>
-                {/* <SelectItem value="" disabled>
-                  Chọn tỉnh/thành phố
-                </SelectItem> */}
-                {provinces.map((province) => (
-                  <SelectItem key={province} value={province}>
-                    {province}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={activeFilter}
-              onValueChange={setActiveFilter}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Trạng thái hoạt động" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Lọc theo trạng thái</SelectItem>
-                <SelectItem value="True">Đang hoạt động</SelectItem>
-                <SelectItem value="False">Không hoạt động</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  {updatedDateFilter ? format(updatedDateFilter, 'MM/yyyy') : 'Lọc theo thời gian cập nhật'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={updatedDateFilter}
-                  onSelect={setUpdatedDateFilter}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-
+        </div>
+      </CardHeader>
+        <CardContent className="pt-6">
+        <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 mb-6">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Tìm kiếm theo tên hoặc ID"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value)
+                if (e.target.value) setSelectedProvince(null)
+              }}
+              className="pl-10 w-full"
+            />
           </div>
+          <Select value={selectedProvince || ''} onValueChange={(value) => {
+            setSelectedProvince(value)
+            if (value) setSearchTerm('')
+          }}>
+            <SelectTrigger className="w-full md:w-[200px]">
+              <SelectValue placeholder="Chọn tỉnh/thành phố" />
+            </SelectTrigger>
+            <SelectContent>
+              {provinces.map((province) => (
+                <SelectItem key={province} value={province}>
+                  {province}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={activeFilter}
+            onValueChange={setActiveFilter}
+          >
+            <SelectTrigger className="w-full md:w-[200px]">
+              <SelectValue placeholder="Trạng thái hoạt động" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả trạng thái</SelectItem>
+              <SelectItem value="True">Đang hoạt động</SelectItem>
+              <SelectItem value="False">Không hoạt động</SelectItem>
+            </SelectContent>
+          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full md:w-auto">
+                <Filter className="mr-2 h-4 w-4" />
+                {updatedDateFilter ? format(updatedDateFilter, 'MM/yyyy') : 'Lọc theo thời gian'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={updatedDateFilter}
+                onSelect={setUpdatedDateFilter}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tên chi nhánh</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Ngày tạo</TableHead>
-                  <TableHead>Cập nhật lần cuối</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.map((branch) => (
-                  <TableRow key={branch.branchId}>
-                    <TableCell className="font-medium">{branch.branchName}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${branch.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                        {branch.isActive ? 'Hoạt động' : 'Không hoạt động'}
-                      </span>
-                    </TableCell>
-                    <TableCell>{formatDate(branch.createdDate)}</TableCell>
-                    <TableCell>{formatDate(branch.updatedDate)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleEditClick(branch)}>
+          <Button variant="outline" onClick={clearAllFilters} className="w-full md:w-auto">
+            <X className="mr-2 h-4 w-4" />
+            Xóa bộ lọc
+          </Button>
+        </div>
+
+        <div className="rounded-md border overflow-hidden">
+          <Table>
+            <TableHeader className="bg-gray-100">
+              <TableRow>
+                <TableHead className="font-semibold">Tên chi nhánh</TableHead>
+                <TableHead className="font-semibold">Trạng thái</TableHead>
+                <TableHead className="font-semibold">Ngày tạo</TableHead>
+                <TableHead className="font-semibold">Cập nhật lần cuối</TableHead>
+                <TableHead className="text-right font-semibold">Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedData.map((branch) => (
+                <TableRow key={branch.branchId} className="hover:bg-gray-50">
+                  <TableCell className="font-medium">{branch.branchName}</TableCell>
+                  <TableCell>
+                  <Badge
+                  variant={branch?.isActive ? "success" : "error"}
+                  className={`text-sm font-medium  ${branch?.isActive ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                    }`}
+                >
+                      {branch.isActive ? 'Hoạt động' : 'Không hoạt động'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{formatDate(branch.createdDate)}</TableCell>
+                  <TableCell>{formatDate(branch.updatedDate)}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEditClick(branch)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleDeteled}>
+                      <Button variant="ghost" size="sm" onClick={handleDeteled}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleDetailsClick(branch)}>
+                        <AlignJustify className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between">
+            <p className="text-sm text-muted-foreground mb-2 sm:mb-0">
               Hiển thị {paginatedData.length} trên tổng số {sortedAndFilteredData.length} chi nhánh
             </p>
             <div className="flex items-center space-x-2">
@@ -319,7 +384,7 @@ const ProjectDeleted = () => {
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft cclassName="h-4 w-4 mr-2" />
                 Trước
               </Button>
               <p className="text-sm font-medium">
@@ -332,7 +397,7 @@ const ProjectDeleted = () => {
                 disabled={currentPage === totalPages}
               >
                 Sau
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </div>
@@ -340,74 +405,97 @@ const ProjectDeleted = () => {
       </Card>
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="sm:max-w-[700px]">
-          <DialogHeader>
-            <DialogTitle>Chỉnh sửa chi nhánh</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-[650px] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-0 overflow-hidden">
+          <DialogHeader className="bg-gradient-to-r from-green-600 to-green-600 text-white p-6 -mx-6 -mt-6 mb-6">
+            <DialogTitle className="text-2xl text-white font-bold">Chỉnh sửa chi nhánh</DialogTitle>
+            <DialogDescription className="text-blue-100">
               Cập nhật thông tin chi nhánh tại đây. Nhấn lưu khi hoàn tất.
             </DialogDescription>
           </DialogHeader>
           {editingBranch && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="branchName" className="text-right">
+            <div className="grid gap-6 py-6 px-6">
+              <div className="grid gap-2">
+                <Label htmlFor="branchName" className="text-sm font-medium text-gray-700">
                   Tên chi nhánh
                 </Label>
                 <Input
                   id="branchName"
                   value={editingBranch.branchName}
                   onChange={(e) => setEditingBranch({ ...editingBranch, branchName: e.target.value })}
-                  className="col-span-3"
+                  className="w-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-300"
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="isActive" className="text-right">
-                  Trạng thái
-                </Label>
+              <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg">
+                <div className="space-y-0.5">
+                  <Label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+                    Trạng thái
+                  </Label>
+                  <div className="text-sm text-gray-600">
+                    {editingBranch.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động'}
+                  </div>
+                </div>
                 <Switch
                   id="isActive"
                   checked={editingBranch.isActive}
                   onCheckedChange={(checked) => setEditingBranch({ ...editingBranch, isActive: checked })}
+                  className="data-[state=checked]:bg-blue-500"
                 />
               </div>
+              <div className="flex items-center gap-2 bg-gray-50 p-4 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Trạng thái hiện tại:</span>
+                <Badge
+                  variant={editingBranch?.isActive ? "success" : "error"}
+                  className={`text-sm font-medium px-3 py-1 ${editingBranch?.isActive ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                    }`}
+                >
+                  {editingBranch?.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+                </Badge>
+              </div>
+
             </div>
           )}
-          <DialogFooter>
-            <Button type="submit" onClick={() => handleEditSave(editingBranch)}>Lưu thay đổi</Button>
+          <DialogFooter className="sm:justify-between  p-4 rounded-b-lg">
+            <Button variant="outline" onClick={() => setIsEditModalOpen(false)} className="hover:bg-gray-200 transition-colors duration-300">
+              Hủy
+            </Button>
+            <Button type="submit" onClick={() => handleEditSave(editingBranch)} className="bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-300">
+              Lưu thay đổi
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Add Branch Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[700px]">
-          <DialogHeader>
-            <DialogTitle>Thêm chi nhánh mới</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-[650px] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-0 overflow-hidden">
+          <DialogHeader className="bg-gradient-to-r from-green-600 to-green-600 text-white p-6 -mx-6 -mt-6 mb-6">
+            <DialogTitle className="text-2xl text-white font-bold">Thêm chi nhánh mới</DialogTitle>
+            <DialogDescription className="text-blue-100">
               Nhập thông tin chi nhánh mới tại đây. Nhấn thêm mới khi hoàn tất.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="newBranchName" className="text-right">
+          <div className="grid gap-6 px-6">
+            <div className="grid gap-2">
+              <Label htmlFor="newBranchName" className="text-sm font-medium text-gray-700">
                 Tên chi nhánh
               </Label>
               <Input
                 id="newBranchName"
                 value={newBranch.branchName}
                 onChange={(e) => setNewBranch({ ...newBranch, branchName: e.target.value })}
-                className="col-span-3"
+                className="w-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-300"
+                placeholder="Nhập tên chi nhánh"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="newBranchProvince" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="newBranchProvince" className="text-sm font-medium text-gray-700">
                 Tỉnh/Thành phố
               </Label>
               <Select
                 value={newBranch.province}
                 onValueChange={(value) => setNewBranch({ ...newBranch, province: value })}
               >
-                <SelectTrigger className="w-[180px] col-span-3">
+                <SelectTrigger id="newBranchProvince" className="w-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-300">
                   <SelectValue placeholder="Chọn tỉnh/thành phố" />
                 </SelectTrigger>
                 <SelectContent>
@@ -419,22 +507,89 @@ const ProjectDeleted = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="newBranchIsActive" className="text-right">
-                Trạng thái
-              </Label>
+            <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg">
+              <div className="space-y-0.5">
+                <Label htmlFor="newBranchIsActive" className="text-sm font-medium text-gray-700">
+                  Trạng thái
+                </Label>
+                <div className="text-sm text-gray-600">
+                  {newBranch.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động'}
+                </div>
+              </div>
               <Switch
                 id="newBranchIsActive"
                 checked={newBranch.isActive}
                 onCheckedChange={(checked) => setNewBranch({ ...newBranch, isActive: checked })}
+                className="data-[state=checked]:bg-blue-500"
               />
             </div>
+            <div className="flex items-center gap-2 bg-gray-50 p-4 rounded-lg">
+              <span className="text-sm font-medium text-gray-700">Trạng thái hiện tại:</span>
+              <Badge
+                variant={newBranch?.isActive ? "success" : "error"}
+                className={`text-sm font-medium px-3 py-1 ${newBranch?.isActive ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                  }`}
+              >
+                {newBranch?.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+              </Badge>
+            </div>
+
           </div>
-          <DialogFooter>
-            <Button type="submit" onClick={handleAddSave}>Thêm mới</Button>
+
+          <DialogFooter className="sm:justify-between p-4 rounded-b-lg">
+            <Button variant="outline" onClick={() => setIsAddModalOpen(false)} className="hover:bg-gray-200 transition-colors duration-300">
+              Hủy
+            </Button>
+            <Button type="submit" onClick={handleAddSave} className="bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-300">
+              Thêm mới
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="sm:max-w-[650px] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-0 overflow-hidden">
+          <DialogHeader className="bg-gradient-to-r from-green-600 to-green-600 text-white p-6 -mx-6 -mt-6 mb-6">
+            <DialogTitle className="text-3xl text-white font-bold text-center">Chi tiết chi nhánh</DialogTitle>
+          </DialogHeader>
+          {detailsBranch && (
+            <div className="space-y-6 px-2">
+              <DetailItem
+                icon={<Building2Icon className="h-6 w-6 text-purple-500" />}
+                label="Tên chi nhánh"
+                value={detailsBranch.branchName}
+              />
+              <div className="flex items-center justify-center">
+                <Badge
+                  variant={detailsBranch.isActive ? "bg-green" : "destructive"}
+                  className={`text-sm font-medium px-3 py-1 ${detailsBranch?.isActive ? "bg-green-500 text-white" : "bg-red-500 text-white"
+                    }`}
+                >
+                  {detailsBranch.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+                </Badge>
+              </div>
+              <DetailItem
+                icon={<MapPinIcon className="h-6 w-6 text-pink-500" />}
+                label="Địa chỉ"
+                value={extractAddress(detailsBranch.branchName)}
+              />
+              <DetailItem
+                icon={<CalendarIcon className="h-6 w-6 text-blue-500" />}
+                label="Ngày tạo"
+                value={formatDate(detailsBranch.createdDate)}
+              />
+              <DetailItem
+                icon={<ClockIcon className="h-6 w-6 text-green-500" />}
+                label="Cập nhật lần cuối"
+                value={formatDate(detailsBranch.updatedDate)}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+
     </div>
 
 

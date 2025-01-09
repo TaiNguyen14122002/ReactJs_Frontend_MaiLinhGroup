@@ -87,7 +87,7 @@ const ProjectListExpiring = () => {
         <div>
             <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-100">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 p-6 bg-gradient-to-r from-blue-500 to-purple-600  shadow-md">
-                    <h1 className="text-2xl font-bold text-white">Kế hoạch sắp hết hạn</h1>
+                    <h1 className="text-2xl font-bold text-white">Chi nhánh đã xoá</h1>
                     <div className="flex w-full md:w-auto gap-4">
                         <div className="relative flex-grow md:flex-grow-0 md:w-64">
                             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500" />
@@ -111,7 +111,7 @@ const ProjectListExpiring = () => {
                     </div>
                 </div>
                 {filteredAndSortedPlans.length === 0 ? (
-                    <p className="text-center text-blue-500 mt-8">Không có dự án sắp hết hạn được tìm thấy</p>
+                    <p className="text-center text-blue-500 mt-8">Không có chi nhánh nào được tìm thấy</p>
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 p-6">
                         {filteredAndSortedPlans.map((plan) => {
